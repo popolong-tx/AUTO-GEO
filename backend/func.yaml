@@ -1,0 +1,14 @@
+schema_version: 20180708
+name: byd-geo-demo
+version: 0.0.1
+runtime: python
+build_image: fnproject/python:3.11-dev
+run_image: fnproject/python:3.11
+entrypoint: /python/bin/fdk /function/func.py handler
+memory: 512
+timeout: 300
+config:
+  OCI_GENAI_ENDPOINT: "https://inference.generativeai.us-chicago-1.oci.oraclecloud.com/20231130/actions/v1"
+  OCI_GENAI_MODEL: "xai.grok-4.20-multi-agent-0309"
+  OCI_OBJECT_STORAGE_BUCKET: "byd-geo-reports"
+  OCI_OBJECT_STORAGE_NAMESPACE: ""
