@@ -11,26 +11,30 @@ import {
   RocketOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useTranslation } from '../i18n/LanguageContext';
 import { logout as apiLogout } from '../services/api';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
-
-const menuItems = [
-  { key: '/', icon: <DashboardOutlined />, label: '概览' },
-  { key: '/topic/goodwood-festival', icon: <RocketOutlined />, label: 'Goodwood 活动' },
-  { key: '/topic/flash-charge-launch', icon: <ThunderboltOutlined />, label: '闪充发布会' },
-  { key: '/topic/q1-financial-report', icon: <BarChartOutlined />, label: 'Q1财报' },
-  { key: '/topic/smart-chip-launch', icon: <BugOutlined />, label: '智驾芯片' },
-  { key: '/topic/dod-1260h-list', icon: <SafetyOutlined />, label: '1260h清单' },
-  { key: '/topic/custom-report', icon: <FileTextOutlined />, label: '通用报告' },
-  { key: '/settings', icon: <SettingOutlined />, label: '配置中心' },
-];
 
 const MainLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
+
+  const menuItems = [
+    { key: '/', icon: <DashboardOutlined />, label: t('nav.overview') },
+    { key: '/topic/goodwood-festival', icon: <RocketOutlined />, label: t('nav.goodwood') },
+    { key: '/topic/flash-charge-launch', icon: <ThunderboltOutlined />, label: t('nav.flashCharge') },
+    { key: '/topic/q1-financial-report', icon: <BarChartOutlined />, label: t('nav.q1Report') },
+    { key: '/topic/smart-chip-launch', icon: <BugOutlined />, label: t('nav.smartChip') },
+    { key: '/topic/dod-1260h-list', icon: <SafetyOutlined />, label: t('nav.dod1260h') },
+    { key: '/topic/custom-report', icon: <FileTextOutlined />, label: t('nav.customReport') },
+    { key: '/settings', icon: <SettingOutlined />, label: t('nav.settings') },
+  ];
+
   const activeKey = location.pathname.startsWith('/topic/') || location.pathname === '/settings'
     ? location.pathname
     : '/';
@@ -80,17 +84,20 @@ const MainLayout: React.FC = () => {
                 whiteSpace: 'nowrap',
               }}
             >
-              BYD 舆情分析系统
+              {t('app.title')}
             </Title>
             <Text style={{ color: 'rgba(255,255,255,0.72)', fontSize: 12, whiteSpace: 'nowrap' }}>
-              实时搜索 · 社交媒体 · 管理层洞察看板
+              {t('app.subtitle')}
             </Text>
           </div>
         </div>
         <Space wrap style={{ marginLeft: 16, flexShrink: 0 }}>
-          <Tag color="blue">实时分析</Tag>
+          <Tag color="blue">{t('home.tags.realtime')}</Tag>
           <Tag color="cyan">Grok + Search</Tag>
-          <Button size="small" onClick={async () => { localStorage.removeItem('bydgeo_token'); await apiLogout().catch(() => {}); message.success('已退出登录'); navigate('/login'); }}>退出登录</Button>
+          <LanguageSwitcher />
+          <Button size="small" onClick={async () => { localStorage.removeItem('bydgeo_token'); await apiLogout().catch(() => {}); message.success(t('nav.logout')); navigate('/login'); }}>
+            {t('nav.logout')}
+          </Button>
         </Space>
       </Header>
       <Layout>
@@ -120,9 +127,11 @@ const MainLayout: React.FC = () => {
                   color: 'rgba(255,255,255,0.86)',
                 }}
               >
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>分析导航</div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>
+                  {t('home.tags.analysis')}
+                </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.62)', lineHeight: 1.6 }}>
-                  在专题、财报、风险、通用报告与配置中心间快速切换
+                  {t('home.subtitle')}
                 </div>
               </div>
             )}

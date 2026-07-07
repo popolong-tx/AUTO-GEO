@@ -1,6 +1,7 @@
 import React from 'react';
 import { Table, Button, Space, Typography, Tag, Empty, Popconfirm, message } from 'antd';
 import { DownloadOutlined, DeleteOutlined, FilePdfOutlined, ReloadOutlined } from '@ant-design/icons';
+import { useTranslation } from '../i18n/LanguageContext';
 
 const { Text } = Typography;
 
@@ -11,14 +12,16 @@ interface ReportListProps {
 }
 
 const ReportList: React.FC<ReportListProps> = ({ reports, loading, onRefresh }) => {
+  const { t } = useTranslation();
+
   const handleDelete = async (topicId: string, reportId: string) => {
     try {
       const resp = await fetch(`/api/reports/${topicId}/${reportId}`, { method: 'DELETE' });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      message.success('报告已删除');
+      message.success(t('reports.deleted'));
       onRefresh();
     } catch {
-      message.error('删除失败');
+      message.error(t('reports.deleteFailed'));
     }
   };
 
@@ -35,17 +38,17 @@ const ReportList: React.FC<ReportListProps> = ({ reports, loading, onRefresh }) 
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       })
-      .catch(() => message.error('下载失败'));
+      .catch(() => message.error(t('reports.downloadFailed')));
   };
 
   if (!loading && reports.length === 0) {
     return (
       <Empty
-        description="暂无报告，完成分析后可导出 PDF 报告"
+        description={t('reports.noReports')}
         style={{ padding: '24px 0' }}
       >
         <Button icon={<ReloadOutlined />} onClick={onRefresh}>
-          刷新
+          {t('app.refresh')}
         </Button>
       </Empty>
     );
@@ -59,22 +62,22 @@ const ReportList: React.FC<ReportListProps> = ({ reports, loading, onRefresh }) 
       rowKey={(record: any) => `${record.topic_id || 'topic'}-${record.id || record.name || record.filename}`}
       title={() => (
         <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Text strong>历史报告</Text>
+          <Text strong>{t('reports.title')}</Text>
           <Button icon={<ReloadOutlined />} size="small" onClick={onRefresh}>
-            刷新
+            {t('app.refresh')}
           </Button>
         </Space>
       )}
       columns={[
         {
-          title: '报告',
+          title: t('reports.filename'),
           dataIndex: 'filename',
           key: 'filename',
           render: (_: any, item: any) => (
             <Space align="start">
               <FilePdfOutlined style={{ fontSize: 18, color: '#f56565', marginTop: 4 }} />
               <Space direction="vertical" size={0}>
-                <Text>{item.filename || item.name?.split('/').pop() || '报告'}</Text>
+                <Text>{item.filename || item.name?.split('/').pop() || t('reports.title')}</Text>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   {item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : ''}
                   {item.topic_name ? ` · ${item.topic_name}` : ''}
@@ -84,34 +87,34 @@ const ReportList: React.FC<ReportListProps> = ({ reports, loading, onRefresh }) 
           ),
         },
         {
-          title: '大小',
+          title: t('reports.size'),
           dataIndex: 'size',
           key: 'size',
           width: 100,
           render: (value: any) => <Tag>{value ? `${(Number(value) / 1024).toFixed(0)} KB` : '-'}</Tag>,
         },
         {
-          title: '模型',
+          title: t('reports.model'),
           dataIndex: 'model',
           key: 'model',
           width: 140,
           render: (value: any) => (value ? <Tag color="blue">{value}</Tag> : '-'),
         },
         {
-          title: '操作',
+          title: t('reports.actions'),
           key: 'actions',
           width: 150,
           render: (_: any, item: any) => (
             <Space size={0}>
               <Button type="link" icon={<DownloadOutlined />} onClick={() => handleDownload(item)}>
-                下载
+                {t('app.download')}
               </Button>
               <Popconfirm
-                title="确认删除此报告？"
+                title={t('reports.deleteConfirm')}
                 onConfirm={() => handleDelete(item.topic_id, item.id)}
               >
                 <Button type="link" danger icon={<DeleteOutlined />}>
-                  删除
+                  {t('app.delete')}
                 </Button>
               </Popconfirm>
             </Space>

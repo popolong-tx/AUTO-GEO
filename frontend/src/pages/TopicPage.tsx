@@ -8,6 +8,7 @@ import {
   FilePdfOutlined, UploadOutlined, DeleteOutlined, EyeOutlined,
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from '../i18n/LanguageContext';
 import {
   getTopic, streamAnalysis, generateReport, listReports, uploadReferenceFile, getDashboard, getDashboardSources,
 } from '../services/api';
@@ -25,8 +26,38 @@ const { TextArea } = Input;
 
 const socialLimitOptions = [10, 50, 100];
 
+const TOPIC_I18N_KEYS: Record<string, { name: string; description: string }> = {
+  'goodwood-festival': { name: 'topic.goodwood.name', description: 'topic.goodwood.description' },
+  'flash-charge-launch': { name: 'topic.flashCharge.name', description: 'topic.flashCharge.description' },
+  'q1-financial-report': { name: 'topic.q1Report.name', description: 'topic.q1Report.description' },
+  'smart-chip-launch': { name: 'topic.smartChip.name', description: 'topic.smartChip.description' },
+  'dod-1260h-list': { name: 'topic.dod1260h.name', description: 'topic.dod1260h.description' },
+  'custom-report': { name: 'topic.custom.name', description: 'topic.custom.description' },
+};
+
 const TopicPage: React.FC = () => {
   const { topicId } = useParams<{ topicId: string }>();
+  const { t, language } = useTranslation();
+
+  const reportLanguageOptions = [
+    { value: 'zh', label: t('console.reportLanguage.zh') },
+    { value: 'en', label: t('console.reportLanguage.en') },
+  ];
+
+  // 跟随界面语言自动切换报告语言
+  useEffect(() => {
+    setReportLanguage(language === 'en' ? 'en' : 'zh');
+  }, [language]);
+
+  const targetRegionOptions = [
+    { value: 'global', label: t('console.targetRegion.global') },
+    { value: 'europe', label: t('console.targetRegion.europe') },
+    { value: 'northAmerica', label: t('console.targetRegion.northAmerica') },
+    { value: 'middleEast', label: t('console.targetRegion.middleEast') },
+    { value: 'southeastAsia', label: t('console.targetRegion.southeastAsia') },
+    { value: 'latinAmerica', label: t('console.targetRegion.latinAmerica') },
+    { value: 'oceania', label: t('console.targetRegion.oceania') },
+  ];
   const [topic, setTopic] = useState<any>(null);
   const [selectedModel, setSelectedModel] = useState<string>('xai.grok-4.20-multi-agent-0309');
   const [models, setModels] = useState<any[]>([]);
@@ -48,17 +79,32 @@ const TopicPage: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [previewFile, setPreviewFile] = useState<any>(null);
   const [socialUpdatesLimit, setSocialUpdatesLimit] = useState<number>(10);
+  const [reportLanguage, setReportLanguage] = useState<string>('zh');
+  const [targetRegion, setTargetRegion] = useState<string>('global');
   const streamRef = useRef<any>(null);
   const forceRefreshRef = useRef(false);
 
   const isCustom = topicId === 'custom-report';
 
+  // Set default report language based on topic
+  useEffect(() => {
+    if (topicId) {
+      //海外主题默认英文
+      const overseasTopics = ['goodwood-festival', 'dod-1260h-list'];
+      if (overseasTopics.includes(topicId)) {
+        setReportLanguage('en');
+      } else {
+        setReportLanguage('zh');
+      }
+    }
+  }, [topicId]);
+
   useEffect(() => {
     if (!topicId) return;
     getTopic(topicId).then((res) => setTopic(res.data));
     setModels([
-      { id: 'xai.grok-4.20-multi-agent-0309', name: 'Grok 4.20', description: '复杂分析 / 默认' },
-      { id: 'xai.grok-4.3', name: 'Grok 4.3', description: '更快 / 通用分析' },
+      { id: 'xai.grok-4.20-multi-agent-0309', name: 'Grok 4.20', description: language === 'zh' ? '复杂分析 / 默认' : 'Deep Analysis / Default' },
+      { id: 'xai.grok-4.3', name: 'Grok 4.3', description: language === 'zh' ? '更快 / 通用分析' : 'Faster / General Analysis' },
     ]);
     setSelectedModel('xai.grok-4.20-multi-agent-0309');
     loadReports();
@@ -70,7 +116,7 @@ const TopicPage: React.FC = () => {
     setStreamContent('');
     setPreviewFile(null);
     setSocialUpdatesLimit(10);
-  }, [topicId]);
+  }, [topicId, language]);
 
   const loadReports = () => {
     if (!topicId) return;
@@ -87,7 +133,6 @@ const TopicPage: React.FC = () => {
     getDashboard(topicId)
       .then((res) => {
         const payload = res.data;
-        // API returns {topic_id, dashboard: {...}} — unwrap the nested dashboard
         const dash = payload && typeof payload === 'object' && payload.dashboard ? payload.dashboard : payload;
         setDashboard(dash);
       })
@@ -116,7 +161,6 @@ const TopicPage: React.FC = () => {
       const detail = res.data?.source || res.data?.detail || res.data || source;
       setSourceDetailContent(detail);
     } catch {
-      // keep drawer usable with the list payload when detail lookup fails
       setSourceDetailContent(source);
     } finally {
       setLoadingSourceDetail(false);
@@ -131,7 +175,7 @@ const TopicPage: React.FC = () => {
   const handleAnalyze = (forceRefresh = false) => {
     if (!topicId || analyzing) return;
     if (isCustom && !customTitle.trim()) {
-      message.warning('请输入报告标题（系统将据此进行 Grok + 搜索工具 + 外部数据联合分析）');
+      message.warning(t('console.customTitleHint'));
       return;
     }
     setAnalyzing(true);
@@ -152,22 +196,24 @@ const TopicPage: React.FC = () => {
         setAnalysisResult(normalized);
         loadDashboard();
         clearUploads();
-        message.success(forceRefreshRef.current ? '已重新分析并更新当日缓存' : '分析完成，已清空本次上传文件');
+        message.success(forceRefreshRef.current ? t('analysis.refreshed') : t('analysis.completed'));
       },
       (error) => {
         setAnalyzing(false);
         clearUploads();
-        message.error(`分析失败: ${error}`);
+        message.error(`${t('analysis.failed')}: ${error}`);
       },
       isCustom ? customTitle.trim() : undefined,
       socialUpdatesLimit,
       forceRefresh,
+      reportLanguage,
+      targetRegion,
     );
   };
 
   const handleGenerateReport = async () => {
     if (!analysisResult?.id) {
-      message.warning('请先完成分析');
+      message.warning(t('empty.startAnalysisButton'));
       return;
     }
     try {
@@ -181,16 +227,16 @@ const TopicPage: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      message.success('报告已导出');
+      message.success(t('success.reportGenerated'));
     } catch {
-      message.error('报告导出失败');
+      message.error(t('error.reportGenerationFailed'));
     }
   };
 
   const handlePromptSaved = (newPrompt: string) => {
     if (topic) setTopic({ ...topic, prompt: newPrompt });
     setPromptEditorOpen(false);
-    message.success('提示词已更新');
+    message.success(t('success.promptUpdated'));
   };
 
   const handleFileUpload = async (file: any) => {
@@ -210,7 +256,7 @@ const TopicPage: React.FC = () => {
           local: data.local,
         },
       ]);
-      message.success(`已上传参考文件：${file.name}`);
+      message.success(`${t('reference.uploadSuccess')}：${file.name}`);
     } catch {
       setUploadedFiles((prev) => [
         ...prev,
@@ -221,10 +267,10 @@ const TopicPage: React.FC = () => {
           url: '',
           content_type: file.type,
           size: file.size,
-          note: '上传失败，已作为本地参考文件保留',
+          note: t('reference.uploadFailed'),
         },
       ]);
-      message.warning(`参考文件 ${file.name} 上传失败，将仅作为本地参考素材使用`);
+      message.warning(t('reference.uploadFailedWarning'));
     }
     return false;
   };
@@ -232,64 +278,6 @@ const TopicPage: React.FC = () => {
   const removeUploadedFile = (uid: string) => {
     setUploadedFiles((prev) => prev.filter((item) => item.uid !== uid));
   };
-
-  const socialUpdates = useMemo(() => {
-    const content = analysisResult?.content || '';
-    const marker = '【社交媒体最新信息】';
-    const idx = content.indexOf(marker);
-    if (idx === -1) return [];
-    let section = content.slice(idx + marker.length).trim();
-    const nextMarkers = ['【国家覆盖】', '【引用备注】', '【参考文献】'];
-    for (const m of nextMarkers) {
-      const pos = section.indexOf(m);
-      if (pos !== -1) section = section.slice(0, pos).trim();
-    }
-    const isRealUrl = (url: string) => {
-      const lowered = url.toLowerCase();
-      if (/(example|placeholder|dummy|fake|\/video\/example|\/post\/example|\/watch\/example)/i.test(lowered)) return false;
-      if (/^https?:\/\/(www\.)?(x|twitter|tiktok|youtube|instagram|facebook|reddit|linkedin)\.com\/?$/i.test(lowered)) return false;
-      let parsed: URL;
-      try {
-        parsed = new URL(url);
-      } catch {
-        return false;
-      }
-      const host = parsed.hostname.replace(/^www\./, '').toLowerCase();
-      const path = parsed.pathname.replace(/^\/+|\/+$/g, '');
-      if (!host || !path) return false;
-      if (host === 'x.com' || host === 'twitter.com') {
-        const parts = path.split('/');
-        const statusId = parts[2] || '';
-        if (parts.length < 3 || parts[1].toLowerCase() !== 'status') return false;
-        if (!/^\d{15,22}$/.test(statusId)) return false;
-        if (statusId === '1808123456789123456' || /(123456|234567|345678|456789|567890|678901|789012|890123)/.test(statusId)) return false;
-      }
-      if (host === 'tiktok.com') {
-        const parts = path.split('/');
-        const videoId = parts[2] || '';
-        if (parts.length < 3 || !parts[0].startsWith('@') || parts[1].toLowerCase() !== 'video') return false;
-        if (!/^\d{17,22}$/.test(videoId)) return false;
-        if (videoId === '1234567890' || /(1234567890|0123456789|9876543210)/.test(videoId)) return false;
-      }
-      if (host === 'facebook.com') {
-        if (/(posts|videos|photos)\/abc\d+/i.test(path)) return false;
-        if (/(posts|videos|photos)\//i.test(path)) {
-          const tail = path.split('/').filter(Boolean).pop() || '';
-          if (!/^\d{8,}$/.test(tail)) return false;
-        }
-      }
-      return true;
-    };
-    return section
-      .split('\n')
-      .map((line: string) => line.trim())
-      .filter((line: string) => {
-        if (!line) return false;
-        const urlMatch = line.match(/https?:\/\/[^\s)\]}]+/i);
-        if (!urlMatch) return false;
-        return isRealUrl(urlMatch[0].replace(/[.,，。；;:]+$/, ''));
-      });
-  }, [analysisResult]);
 
   const dashboardData = analysisResult?.dashboard ?? dashboard;
   const dashboardKpis = dashboardData?.kpis || dashboardData?.cards || dashboardData?.metrics;
@@ -300,6 +288,93 @@ const TopicPage: React.FC = () => {
     )
   );
   const showDashboardCard = hasDashboardData || loadingDashboard;
+
+  const isRealSocialUrl = (url: string) => {
+    const lowered = url.toLowerCase();
+    if (/(example|placeholder|dummy|fake|\/video\/example|\/post\/example|\/watch\/example)/i.test(lowered)) return false;
+    if (/^https?:\/\/(www\.)?(x|twitter|tiktok|youtube|instagram|facebook|reddit|linkedin)\.com\/?$/i.test(lowered)) return false;
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      return false;
+    }
+    const host = parsed.hostname.replace(/^www\./, '').toLowerCase();
+    const path = parsed.pathname.replace(/^\/+|\/+$/g, '');
+    if (!host || !path) return false;
+    if (host === 'x.com' || host === 'twitter.com') {
+      const parts = path.split('/');
+      const statusId = parts[2] || '';
+      if (parts.length < 3 || parts[1].toLowerCase() !== 'status') return false;
+      if (!/^\d{15,22}$/.test(statusId)) return false;
+      if (statusId === '1808123456789123456' || /(123456|234567|345678|456789|567890|678901|789012|890123)/.test(statusId)) return false;
+    }
+    if (host === 'tiktok.com') {
+      const parts = path.split('/');
+      const videoId = parts[2] || '';
+      if (parts.length < 3 || !parts[0].startsWith('@') || parts[1].toLowerCase() !== 'video') return false;
+      if (!/^\d{17,22}$/.test(videoId)) return false;
+      if (videoId === '1234567890' || /(1234567890|0123456789|9876543210)/.test(videoId)) return false;
+    }
+    if (host === 'facebook.com') {
+      if (/(posts|videos|photos)\/abc\d+/i.test(path)) return false;
+      if (/(posts|videos|photos)\//i.test(path)) {
+        const tail = path.split('/').filter(Boolean).pop() || '';
+        if (!/^\d{8,}$/.test(tail)) return false;
+      }
+    }
+    return true;
+  };
+
+  const socialUpdates = useMemo(() => {
+    const sourceCandidates = [
+      dashboardData?.sources,
+      dashboardData?.top_sources,
+      dashboardData?.topSources,
+      dashboardData?.source_list,
+      dashboardSources,
+    ];
+    const dashboardSocialSources = sourceCandidates.find((candidate) => Array.isArray(candidate) && candidate.length > 0) || [];
+    const fromDashboard = dashboardSocialSources
+      .filter((item: any) => String(item?.source_type || item?.type || '').toLowerCase().includes('social'))
+      .map((item: any) => {
+        const url = String(item?.url || '').replace(/[.,，。；;:]+$/, '');
+        const text = String(item?.summary || item?.title || url).trim();
+        return url && isRealSocialUrl(url) ? `${text} ${url}` : '';
+      })
+      .filter(Boolean);
+    if (fromDashboard.length > 0) return fromDashboard;
+
+    const content = analysisResult?.content || '';
+    // Support both Chinese and English markers
+    const socialMarkers = ['【社交媒体最新信息】', '【Latest Social Updates】', '[Latest Social Updates]', '## Latest Social Updates'];
+    const endMarkers = ['【国家覆盖】', '【引用备注】', '【参考文献】', '[Country Coverage]', '[Citation Notes]', '[References]', '## Country Coverage', '## Citation Notes', '## References'];
+
+    let section = '';
+    for (const marker of socialMarkers) {
+      const idx = content.indexOf(marker);
+      if (idx !== -1) {
+        section = content.slice(idx + marker.length).trim();
+        break;
+      }
+    }
+    if (!section) return [];
+
+    for (const m of endMarkers) {
+      const pos = section.indexOf(m);
+      if (pos !== -1) section = section.slice(0, pos).trim();
+    }
+    return section
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string) => {
+        if (!line) return false;
+        const urlMatch = line.match(/https?:\/\/[^\s)\]}]+/i);
+        if (!urlMatch) return false;
+        return isRealSocialUrl(urlMatch[0].replace(/[.,，。；;:]+$/, ''));
+      });
+  }, [analysisResult, dashboardData, dashboardSources]);
+
   const dashboardSourceList = useMemo(() => {
     const candidates = [
       dashboardData?.sources,
@@ -347,28 +422,57 @@ const TopicPage: React.FC = () => {
   }, [dashboardData]);
   const countryCoverageEmpty = countryCoverageData.length === 0;
 
+  const reportOverview = useMemo(() => {
+    const content = String(analysisResult?.content || '').trim();
+    if (!content) return [];
+
+    const cleanLine = (line: string) => line
+      .replace(/^[-*•\d.、\s]+/, '')
+      .replace(/[`*_>#]/g, '')
+      .trim();
+
+    const extractOverallSummary = () => {
+      const lines = content.split('\n').map(cleanLine).filter(Boolean);
+      const sectionCandidates = lines.filter((line) => {
+        if (line.startsWith('【')) return true;
+        if (/^#{1,3}\s+/.test(line)) return true;
+        return false;
+      });
+      const startIndex = sectionCandidates.length > 0 ? lines.findIndex((line) => sectionCandidates.includes(line)) : -1;
+      const head = startIndex > 0 ? lines.slice(0, startIndex) : lines.slice(0, Math.min(12, lines.length));
+      const meaningful = head
+        .filter((line) => line && !line.startsWith('{') && !line.startsWith('}') && !line.startsWith('```'))
+        .filter((line) => !/^\"?(positive|neutral|negative)\"?\s*[:：]/i.test(line));
+      const picked = meaningful.slice(0, 6).join('；');
+      return picked || lines.slice(0, 6).join('；');
+    };
+
+    const summary = extractOverallSummary();
+    return summary ? [{ title: t('report.overview'), summary }] : [];
+  }, [analysisResult, t]);
+
   const refreshStatusText = useMemo(() => {
     if (!dashboardData) return '';
     const parts: string[] = [];
     const refreshedAt = dashboardData?.refreshed_at || dashboardData?.updated_at || dashboardData?.last_updated;
     if (refreshedAt) {
-      parts.push(`刷新于 ${new Date(refreshedAt).toLocaleString('zh-CN')}`);
+      parts.push(`${language === 'zh' ? '刷新于' : 'Refreshed at'} ${new Date(refreshedAt).toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US')}`);
     }
     const refreshCount = dashboardData?.refresh_count || dashboardData?.refreshCount;
     if (refreshCount !== undefined && refreshCount !== null) {
-      parts.push(`刷新 ${refreshCount} 次`);
+      parts.push(`${language === 'zh' ? '刷新' : 'Refreshed'} ${refreshCount} ${language === 'zh' ? '次' : 'times'}`);
     }
     const sourceCount = dashboardData?.source_count || dashboardData?.sourceCount;
     if (sourceCount !== undefined && sourceCount !== null) {
-      parts.push(`来源 ${sourceCount}`);
+      parts.push(`${language === 'zh' ? '来源' : 'Sources'} ${sourceCount}`);
     }
     return parts.join(' · ');
-  }, [dashboardData]);
+  }, [dashboardData, language]);
 
   if (!topic) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 100 }}>
-        <Spin size="large" tip="加载话题..." />
+        <Spin size="large" tip={t('app.loading')} />
       </div>
     );
   }
@@ -378,26 +482,26 @@ const TopicPage: React.FC = () => {
       <Card style={{ marginBottom: 16, borderRadius: 12 }} bodyStyle={{ padding: '16px 20px' }}>
         <div>
           <Title level={3} style={{ marginBottom: 4 }}>
-            {topic.icon} {topic.name}
+            {topic.icon} {TOPIC_I18N_KEYS[topicId || ''] ? t(TOPIC_I18N_KEYS[topicId || ''].name) : topic.name}
           </Title>
-          <Text type="secondary">{topic.description}</Text>
+          <Text type="secondary">{TOPIC_I18N_KEYS[topicId || ''] ? t(TOPIC_I18N_KEYS[topicId || ''].description) : topic.description}</Text>
 
           {isCustom && (
             <div style={{ marginTop: 12 }}>
               <Text strong style={{ display: 'block', marginBottom: 6 }}>
-                输入报告标题 *
+                {t('console.customTitle')}
               </Text>
               <TextArea
                 value={customTitle}
                 onChange={(e) => setCustomTitle(e.target.value)}
-                placeholder="例如：小米SU7上市舆情分析、特斯拉FSD入华影响评估、蔚来换电模式争议..."
+                placeholder={t('console.customTitlePlaceholder')}
                 rows={2}
                 maxLength={200}
                 showCount
                 style={{ fontSize: 14 }}
               />
               <Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 12 }}>
-                标题将作为分析主题，系统会结合 Grok + 搜索工具 + 外部数据联合分析生成专业报告
+                {t('console.customTitleHint')}
               </Text>
             </div>
           )}
@@ -412,26 +516,42 @@ const TopicPage: React.FC = () => {
             }}
           >
             <Space wrap align="center" size={[8, 8]}>
-              <Text strong style={{ fontSize: 13 }}>分析控制台</Text>
-              <Text type="secondary" style={{ fontSize: 12 }}>模型</Text>
+              <Text strong style={{ fontSize: 13 }}>{t('console.title')}</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>{t('console.model')}</Text>
               <Select
                 size="small"
                 value={selectedModel}
                 onChange={setSelectedModel}
                 style={{ width: 260 }}
-                placeholder="选择模型"
+                placeholder={t('console.modelSelect')}
                 options={models.map((m) => ({
                   value: m.id,
                   label: `${m.name} - ${m.description}`,
                 }))}
               />
-              <Text type="secondary" style={{ fontSize: 12 }}>社媒</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>{t('console.socialLimit')}</Text>
               <Select
                 size="small"
                 value={socialUpdatesLimit}
                 onChange={setSocialUpdatesLimit}
                 style={{ width: 130 }}
-                options={socialLimitOptions.map((count) => ({ value: count, label: `${count} 条` }))}
+                options={socialLimitOptions.map((count) => ({ value: count, label: `${count} ${t('console.socialLimitUnit')}` }))}
+              />
+              <Text type="secondary" style={{ fontSize: 12 }}>{t('console.reportLanguage')}</Text>
+              <Select
+                size="small"
+                value={reportLanguage}
+                onChange={setReportLanguage}
+                style={{ width: 140 }}
+                options={reportLanguageOptions}
+              />
+              <Text type="secondary" style={{ fontSize: 12 }}>{t('console.targetRegion')}</Text>
+              <Select
+                size="small"
+                value={targetRegion}
+                onChange={setTargetRegion}
+                style={{ width: 120 }}
+                options={targetRegionOptions}
               />
               <Upload
                 beforeUpload={handleFileUpload}
@@ -439,51 +559,51 @@ const TopicPage: React.FC = () => {
                 showUploadList={false}
                 accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.json"
               >
-                <Button size="small" icon={<UploadOutlined />}>上载参考文件</Button>
+                <Button size="small" icon={<UploadOutlined />}>{t('console.uploadFile')}</Button>
               </Upload>
               <Button size="small" icon={<EditOutlined />} onClick={() => setPromptEditorOpen(true)}>
-                编辑提示词
+                {t('console.editPrompt')}
               </Button>
               <Button type="primary" size="small" icon={<PlayCircleOutlined />} onClick={() => handleAnalyze(false)} loading={analyzing}>
-                开始分析
+                {t('console.startAnalysis')}
               </Button>
               <Button size="small" danger icon={<ReloadOutlined />} onClick={() => handleAnalyze(true)} loading={analyzing}>
-                重新分析
+                {t('console.reAnalyze')}
               </Button>
               {refreshStatusText ? (
                 <Tag color="geekblue" style={{ marginRight: 0 }}>
                   {refreshStatusText}
                 </Tag>
               ) : null}
-              {uploadedFiles.length > 0 && <Tag color="processing">参考文件 {uploadedFiles.length}</Tag>}
+              {uploadedFiles.length > 0 && <Tag color="processing">{t('reference.title')} {uploadedFiles.length}</Tag>}
             </Space>
           </div>
         </div>
       </Card>
 
       {uploadedFiles.length > 0 && (
-        <Card title="参考素材" style={{ marginBottom: 24, borderRadius: 12 }}>
+        <Card title={t('reference.title')} style={{ marginBottom: 24, borderRadius: 12 }}>
           <List
             dataSource={uploadedFiles}
             renderItem={(item) => (
               <List.Item
                 actions={[
                   (item.content_type || '').startsWith('image/') ? (
-                    <Button type="link" onClick={() => setPreviewFile(item)}>预览图片</Button>
+                    <Button type="link" onClick={() => setPreviewFile(item)}>{t('reference.preview')}</Button>
                   ) : null,
                   <Button type="link" danger icon={<DeleteOutlined />} onClick={() => removeUploadedFile(item.uid)}>
-                    删除
+                    {t('reference.delete')}
                   </Button>,
                 ].filter(Boolean)}
               >
                 <List.Item.Meta
-                  title={<Space wrap><span>{item.name}</span>{item.local ? <Tag color="green">本地</Tag> : null}</Space>}
+                  title={<Space wrap><span>{item.name}</span>{item.local ? <Tag color="green">{t('reference.local')}</Tag> : null}</Space>}
                   description={
                     <Space direction="vertical" size={2}>
-                      <Text type="secondary">{item.content_type || '未知类型'}{item.size ? ` · ${(item.size / 1024).toFixed(1)} KB` : ''}</Text>
-                      {item.url ? <a href={item.url} target="_blank" rel="noreferrer">打开链接</a> : null}
+                      <Text type="secondary">{item.content_type || t('reference.unknownType')}{item.size ? ` · ${(item.size / 1024).toFixed(1)} KB` : ''}</Text>
+                      {item.url ? <a href={item.url} target="_blank" rel="noreferrer">{t('reference.openLink')}</a> : null}
                       {item.storage_path ? <Text type="secondary">{item.storage_path}</Text> : null}
-                      {item.resize_meta ? <Text type="secondary">压缩：{JSON.stringify(item.resize_meta)}</Text> : null}
+                      {item.resize_meta ? <Text type="secondary">{t('reference.compressed')}：{JSON.stringify(item.resize_meta)}</Text> : null}
                       {item.note ? <Text type="warning">{item.note}</Text> : null}
                     </Space>
                   }
@@ -496,9 +616,9 @@ const TopicPage: React.FC = () => {
 
       {previewFile && (
         <Card
-          title={`图片预览：${previewFile.name}`}
+          title={`${t('reference.preview')}：${previewFile.name}`}
           style={{ marginBottom: 24, borderRadius: 12 }}
-          extra={<Button onClick={() => setPreviewFile(null)}>关闭预览</Button>}
+          extra={<Button onClick={() => setPreviewFile(null)}>{t('app.close')}</Button>}
         >
           <img
             src={previewFile.url}
@@ -508,7 +628,7 @@ const TopicPage: React.FC = () => {
           <Divider />
           <Space direction="vertical" size={4}>
             <Text type="secondary">{previewFile.storage_path}</Text>
-            {previewFile.resize_meta ? <Text type="secondary">预压缩：{JSON.stringify(previewFile.resize_meta)}</Text> : null}
+            {previewFile.resize_meta ? <Text type="secondary">{t('reference.compressed')}：{JSON.stringify(previewFile.resize_meta)}</Text> : null}
           </Space>
         </Card>
       )}
@@ -525,34 +645,36 @@ const TopicPage: React.FC = () => {
         items={[
           {
             key: 'analysis',
-            label: '分析结果',
+            label: t('report.title'),
             children: (
               <div>
                 {analyzing && (
                   <Card style={{ marginBottom: 24, borderRadius: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                       <Spin size="small" />
-                      <Text>正在分析中，内容将实时展示在下方...</Text>
+                      <Text>{t('analysis.analyzing')}</Text>
                     </div>
                     <StreamingContent content={streamContent} />
                   </Card>
                 )}
-                {analysisResult && !analyzing && (
+                {(analysisResult || dashboardData) && !analyzing && (
                   <>
-                    <Card style={{ marginBottom: 24, borderRadius: 12 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                        <Space wrap>
-                          <Tag color="blue">{analysisResult.model}</Tag>
-                          <Tag color="purple">社交媒体最新信息 {socialUpdatesLimit} 条</Tag>
-                          <Text type="secondary">
-                            分析时间: {analysisResult.created_at ? new Date(analysisResult.created_at).toLocaleString('zh-CN') : new Date().toLocaleString('zh-CN')}
-                          </Text>
-                        </Space>
-                        <Space wrap>
-                          <Button icon={<FilePdfOutlined />} onClick={handleGenerateReport}>导出 PDF</Button>
-                        </Space>
-                      </div>
-                    </Card>
+                    {analysisResult && (
+                      <Card style={{ marginBottom: 24, borderRadius: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                          <Space wrap>
+                            <Tag color="blue">{analysisResult.model}</Tag>
+                            <Tag color="purple">{t('social.title')} {socialUpdatesLimit} {t('console.socialLimitUnit')}</Tag>
+                            <Text type="secondary">
+                              {t('analysis.time')}: {analysisResult.created_at ? new Date(analysisResult.created_at).toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US') : new Date().toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US')}
+                            </Text>
+                          </Space>
+                          <Space wrap>
+                            <Button icon={<FilePdfOutlined />} onClick={handleGenerateReport}>{t('analysis.exportPdf')}</Button>
+                          </Space>
+                        </div>
+                      </Card>
+                    )}
 
                     <div style={{ marginBottom: 24 }}>
                       <MentionsReachTrendChart data={dashboardTrendData} loading={loadingDashboard} />
@@ -560,41 +682,42 @@ const TopicPage: React.FC = () => {
 
                     <Collapse
                       style={{ marginBottom: 24, borderRadius: 12 }}
-                      defaultActiveKey={["structured-insights", "report-full"]}
+                      defaultActiveKey={["structured-insights", "report-overview"]}
+                      activeKey={undefined}
                       items={[
                         {
                           key: 'structured-insights',
                           label: (
                             <Space>
-                              <Text strong>结构化洞察</Text>
-                              {analysisResult.sentiment ? <Tag color="blue">情绪分布</Tag> : null}
-                              <Tag color="purple">社交媒体 {socialUpdates.length > 0 ? `${socialUpdates.length} 条` : '暂无'}</Tag>
-                              <Tag color="cyan">国家覆盖</Tag>
+                              <Text strong>{t('report.structuredInsights')}</Text>
+                              {analysisResult?.sentiment ? <Tag color="blue">{t('insights.sentiment')}</Tag> : null}
+                              <Tag color="purple">{t('insights.socialUpdates')} {socialUpdates.length > 0 ? `${socialUpdates.length} ${t('console.socialLimitUnit')}` : t('insights.noData')}</Tag>
+                              <Tag color="cyan">{t('insights.countryCoverage')}</Tag>
                             </Space>
                           ),
                           children: (
                             <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                              {analysisResult.sentiment ? <SentimentChart sentiment={analysisResult.sentiment} /> : null}
+                              {analysisResult?.sentiment ? <SentimentChart sentiment={analysisResult.sentiment} /> : null}
                               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)', gap: 12, alignItems: 'stretch' }}>
                                 <div style={{ minWidth: 0 }}>
                                   <CountryCoverageChart
-                                    title="Countries with Most Coverage"
-                                    subtitle="Top countries by coverage volume"
+                                    title={t('countryCoverage.titleEn')}
+                                    subtitle={t('countryCoverage.subtitleEn')}
                                     data={countryCoverageData}
                                     loading={loadingDashboard}
                                   />
                                   {countryCoverageEmpty && dashboardData?.country_coverage ? (
                                     <Text type="secondary" style={{ display: 'block', marginTop: 8, fontSize: 12 }}>
-                                      后端返回了国家覆盖，但未能提取出有效数值；请检查国家覆盖章节是否包含国家名与热度计数。
+                                      {t('countryCoverage.noData')}
                                     </Text>
                                   ) : null}
                                 </div>
                                 <Card size="small" style={{ borderRadius: 12, overflow: 'hidden', height: '100%' }} bodyStyle={{ padding: 12, height: '100%', display: 'flex', flexDirection: 'column' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                                     <div style={{ minWidth: 0 }}>
-                                      <Text strong style={{ display: 'block', fontSize: 13, lineHeight: 1.2 }}>社交媒体最新信息</Text>
+                                      <Text strong style={{ display: 'block', fontSize: 13, lineHeight: 1.2 }}>{t('social.title')}</Text>
                                       <Text type="secondary" style={{ fontSize: 11 }}>
-                                        {socialUpdates.length > 0 ? `${socialUpdates.length} 条动态` : '暂无实时动态，显示说明占位'}
+                                        {socialUpdates.length > 0 ? `${socialUpdates.length} ${t('social.count')}` : t('social.noData')}
                                       </Text>
                                     </div>
                                     <Tag color="purple">Social</Tag>
@@ -605,7 +728,7 @@ const TopicPage: React.FC = () => {
                                       items={[
                                         {
                                           key: 'social-list',
-                                          label: `最新动态 ${socialUpdates.length > 0 ? `${socialUpdates.length} 条` : '占位预览'}`,
+                                          label: `${t('social.latestUpdates')} ${socialUpdates.length > 0 ? `${socialUpdates.length} ${t('console.socialLimitUnit')}` : t('social.placeholder')}`,
                                           children: socialUpdates.length > 0 ? (
                                             <List
                                               size="small"
@@ -633,10 +756,15 @@ const TopicPage: React.FC = () => {
                                             <Paragraph style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
                                               {(() => {
                                                 const content = analysisResult?.content || '';
-                                                const marker = '【社交媒体最新信息】';
-                                                const idx = content.indexOf(marker);
-                                                if (idx === -1) return '报告中未找到【社交媒体最新信息】章节。';
-                                                return content.slice(idx + marker.length).trim() || '该章节为空。';
+                                                // Support both Chinese and English markers
+                                                const socialMarkers = ['【社交媒体最新信息】', '【Latest Social Updates】', '[Latest Social Updates]', '## Latest Social Updates'];
+                                                for (const marker of socialMarkers) {
+                                                  const idx = content.indexOf(marker);
+                                                  if (idx !== -1) {
+                                                    return content.slice(idx + marker.length).trim() || t('social.noData');
+                                                  }
+                                                }
+                                                return t('social.noUpdates');
                                               })()}
                                             </Paragraph>
                                           ),
@@ -650,26 +778,44 @@ const TopicPage: React.FC = () => {
                           ),
                         },
                         {
+                          key: 'report-overview',
+                          label: <Text strong>{t('report.overview')}</Text>,
+                          children: reportOverview.length > 0 ? (
+                            <List
+                              size="small"
+                              dataSource={reportOverview}
+                              renderItem={(item) => (
+                                <List.Item>
+                                  <List.Item.Meta
+                                    title={<Text strong>{item.title}</Text>}
+                                    description={<Text type="secondary">{item.summary}</Text>}
+                                  />
+                                </List.Item>
+                              )}
+                            />
+                          ) : (
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('report.noOverview')} />
+                          ),
+                        },
+                        {
                           key: 'report-full',
-                          label: <Text strong>分析报告全文</Text>,
-                          children: <StreamingContent content={analysisResult.content} />,
+                          label: <Text strong>{t('report.fullReport')}</Text>,
+                          children: <StreamingContent content={analysisResult?.content || ''} />,
                         },
                       ]}
                     />
                   </>
                 )}
-                {!analyzing && !analysisResult && (
+                {!analyzing && !analysisResult && !dashboardData && (
                   <Card style={{ borderRadius: 12, textAlign: 'center', padding: '60px 0' }}>
                     <Empty
                       description={
                         <Text type="secondary" style={{ fontSize: 16 }}>
-                          {isCustom
-                            ? '输入标题后点击"开始分析"，系统将基于 Grok + 搜索工具 + 外部数据联合分析生成专业报告'
-                            : '点击"开始分析"按钮，系统将通过 Grok + 搜索工具 + 外部数据联合分析进行深度舆情分析'}
+                          {isCustom ? t('empty.startAnalysisCustom') : t('empty.startAnalysis')}
                         </Text>
                       }
                     >
-                      <Button type="primary" size="large" icon={<PlayCircleOutlined />} onClick={() => handleAnalyze(false)}>开始分析</Button>
+                      <Button type="primary" size="large" icon={<PlayCircleOutlined />} onClick={() => handleAnalyze(false)}>{t('empty.startAnalysisButton')}</Button>
                     </Empty>
                   </Card>
                 )
@@ -682,7 +828,7 @@ const TopicPage: React.FC = () => {
             label: (
               <Space>
                 <FilePdfOutlined />
-                历史报告
+                {t('reports.title')}
                 {reports.length > 0 && <Tag>{reports.length}</Tag>}
               </Space>
             ),

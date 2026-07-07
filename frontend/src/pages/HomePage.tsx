@@ -12,6 +12,7 @@ import {
   RocketOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../i18n/LanguageContext';
 import { getTopics } from '../services/api';
 
 const { Title, Text, Paragraph } = Typography;
@@ -34,10 +35,20 @@ const TOPIC_GRADIENTS: Record<string, string> = {
   'custom-report': 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)',
 };
 
+const TOPIC_I18N_KEYS: Record<string, { name: string; description: string }> = {
+  'goodwood-festival': { name: 'topic.goodwood.name', description: 'topic.goodwood.description' },
+  'flash-charge-launch': { name: 'topic.flashCharge.name', description: 'topic.flashCharge.description' },
+  'q1-financial-report': { name: 'topic.q1Report.name', description: 'topic.q1Report.description' },
+  'smart-chip-launch': { name: 'topic.smartChip.name', description: 'topic.smartChip.description' },
+  'dod-1260h-list': { name: 'topic.dod1260h.name', description: 'topic.dod1260h.description' },
+  'custom-report': { name: 'topic.custom.name', description: 'topic.custom.description' },
+};
+
 const HomePage: React.FC = () => {
   const [topics, setTopics] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     getTopics()
@@ -49,7 +60,7 @@ const HomePage: React.FC = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <Spin size="large" tip="加载中..." />
+        <Spin size="large" tip={t('app.loading')} />
       </div>
     );
   }
@@ -66,15 +77,15 @@ const HomePage: React.FC = () => {
         >
           <Space direction="vertical" size={10} style={{ width: '100%' }}>
             <Space wrap>
-              <Tag color="blue">实时舆情</Tag>
-              <Tag color="cyan">X / Web Search</Tag>
-              <Tag color="purple">管理层看板</Tag>
+              <Tag color="blue">{t('home.tags.realtime')}</Tag>
+              <Tag color="cyan">{t('home.tags.search')}</Tag>
+              <Tag color="purple">{t('home.tags.dashboard')}</Tag>
             </Space>
             <Title level={2} style={{ margin: 0, color: '#fff' }}>
-              舆情分析概览
+              {t('home.title')}
             </Title>
             <Text style={{ color: 'rgba(255,255,255,0.78)', fontSize: 14 }}>
-              选择话题开始分析，系统将基于 Grok + 搜索工具 + 外部数据联合分析提供深度舆情洞察。
+              {t('home.subtitle')}
             </Text>
           </Space>
         </div>
@@ -83,17 +94,17 @@ const HomePage: React.FC = () => {
       <Row gutter={[18, 18]} style={{ marginBottom: 28 }}>
         <Col xs={24} md={8}>
           <Card style={{ borderRadius: 16 }}>
-            <Statistic title="分析专题数" value={topics.length} prefix={<RadarChartOutlined style={{ color: '#2563eb' }} />} />
+            <Statistic title={t('home.topicCount')} value={topics.length} prefix={<RadarChartOutlined style={{ color: '#2563eb' }} />} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card style={{ borderRadius: 16 }}>
-            <Statistic title="支持模型" value={2} prefix={<FileTextOutlined style={{ color: '#7c3aed' }} />} suffix="个" />
+            <Statistic title={t('home.modelCount')} value={2} prefix={<FileTextOutlined style={{ color: '#7c3aed' }} />} suffix={t('home.models')} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card style={{ borderRadius: 16 }}>
-            <Statistic title="搜索覆盖" value="Web + X" prefix={<GlobalOutlined style={{ color: '#0ea5e9' }} />} />
+            <Statistic title={t('home.searchCoverage')} value="Web + X" prefix={<GlobalOutlined style={{ color: '#0ea5e9' }} />} />
           </Card>
         </Col>
       </Row>
@@ -138,18 +149,18 @@ const HomePage: React.FC = () => {
             >
               <Space direction="vertical" size={8} style={{ width: '100%' }}>
                 <Space wrap>
-                  <Tag color="blue">专题分析</Tag>
-                  {topic.id === 'custom-report' ? <Tag color="purple">自定义</Tag> : <Tag color="cyan">预置</Tag>}
+                  <Tag color="blue">{t('home.tags.analysis')}</Tag>
+                  {topic.id === 'custom-report' ? <Tag color="purple">{t('home.tags.custom')}</Tag> : <Tag color="cyan">{t('home.tags.preset')}</Tag>}
                 </Space>
                 <Title level={5} style={{ margin: 0 }}>
-                  {topic.name}
+                  {TOPIC_I18N_KEYS[topic.id] ? t(TOPIC_I18N_KEYS[topic.id].name) : topic.name}
                 </Title>
                 <Paragraph
                   type="secondary"
                   ellipsis={{ rows: 2 }}
                   style={{ fontSize: 13, marginBottom: 0 }}
                 >
-                  {topic.description}
+                  {TOPIC_I18N_KEYS[topic.id] ? t(TOPIC_I18N_KEYS[topic.id].description) : topic.description}
                 </Paragraph>
               </Space>
             </Card>
@@ -161,7 +172,7 @@ const HomePage: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <ClockCircleOutlined style={{ color: '#64748b' }} />
           <Text type="secondary">
-            支持模型：xai.grok-4.20-multi-agent-0309 / xai.grok-4.3；支持 Web 搜索、X 社交媒体最新数据、参考文件上传与引用输出。
+            {t('home.footer')}
           </Text>
         </div>
       </Card>

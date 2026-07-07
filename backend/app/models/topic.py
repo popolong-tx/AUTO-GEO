@@ -53,7 +53,7 @@ DEFAULT_TOPICS = [
         "name": "比亚迪3月5日闪充中国发布会",
         "description": "2026年3月5日比亚迪「闪充中国」发布会舆情分析",
         "icon": "⚡",
-        "default_prompt": """请针对2026年3月5日比亚迪“闪充中国”发布会开展全面深入的舆情分析，以海外社交媒体反馈为核心，结合国内外平台进行对比洞察。从技术传播、用户体验、竞品对比、基础设施影响等维度展开多层次逻辑推理和因果链分析，尤其关注以下要点：
+        "default_prompt": """请针对2026年3月5日比亚迪"闪充中国"发布会开展全面深入的舆情分析，以海外社交媒体反馈为核心，结合国内外平台进行对比洞察。从技术传播、用户体验、竞品对比、基础设施影响等维度展开多层次逻辑推理和因果链分析，尤其关注以下要点：
 
 闪充技术亮点在海外的传播热度、接受程度，以及官方演示与用户实际反馈的差异。
 与特斯拉、宁德时代等竞品充电技术的海外讨论量、情绪倾向和用户偏好对比。
@@ -180,7 +180,7 @@ DEFAULT_TOPICS = [
 
 活动传播热度：BYD在Goodwood活动中的曝光、传播热度、海外受众接受程度，以及现场展示与海外用户真实反馈之间的差异。
 竞品对比讨论：与特斯拉、保时捷、Rimac、莲花等性能/电动竞品在Goodwood语境下的讨论量、情绪倾向和用户偏好对比。
-品牌与性能叙事：BYD在海外高性能、豪华、赛道/爬坡等场景中的品牌认知变化，以及是否形成“技术实力”或“性能突破”的新叙事。
+品牌与性能叙事：BYD在海外高性能、豪华、赛道/爬坡等场景中的品牌认知变化，以及是否形成"技术实力"或"性能突破"的新叙事。
 风险与质疑：关于质量、速度、续航、品牌调性、车迷圈接受度等质疑在海外的演化路径、峰值变化及传播特征。
 
 数据要求（严格减少幻觉）：
@@ -270,8 +270,12 @@ class AnalysisRequest(BaseModel):
     custom_title: Optional[str] = None
     uploaded_files: List[UploadFileItem] = Field(default_factory=list)
     social_updates_limit: int = 10
-    # True means the user clicked “重新分析”: bypass and clear today's cache/snapshot, then call the model again.
+    # True means the user clicked "重新分析": bypass and clear today's cache/snapshot, then call the model again.
     force_refresh: bool = False
+    # Report language: 'zh' for Chinese, 'en' for English, 'bilingual' for both
+    report_language: str = "zh"
+    # Target region for analysis focus
+    target_region: str = "global"
 
 
 class PromptUpdateRequest(BaseModel):

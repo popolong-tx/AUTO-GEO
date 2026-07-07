@@ -148,6 +148,8 @@ async def run_analysis(req: AnalysisRequest, _user: str = Depends(require_auth))
             custom_title=req.custom_title or "",
             social_updates_limit=req.social_updates_limit,
             force_refresh=getattr(req, "force_refresh", False),
+            report_language=getattr(req, "report_language", "zh"),
+            target_region=getattr(req, "target_region", "global"),
         )
         add_analysis_result(req.topic_id, result)
         _save_dashboard_for_result(result)
@@ -260,6 +262,8 @@ async def run_analysis_stream(req: AnalysisRequest, _user: str = Depends(require
                 custom_title=req.custom_title or "",
                 social_updates_limit=req.social_updates_limit,
                 force_refresh=getattr(req, "force_refresh", False),
+                report_language=getattr(req, "report_language", "zh"),
+                target_region=getattr(req, "target_region", "global"),
             ):
                 # The engine yields a special marker with the post-processed final text
                 if chunk.startswith("\n__PROCESSED_FINAL__\n"):

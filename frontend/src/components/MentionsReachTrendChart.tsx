@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Card, Empty, Space, Tag, Typography } from 'antd';
 import { RiseOutlined, LineChartOutlined } from '@ant-design/icons';
+import { useTranslation } from '../i18n/LanguageContext';
 
 const { Text } = Typography;
 
@@ -33,10 +34,12 @@ const compactLabel = (value?: string) => {
 };
 
 const MentionsReachTrendChart: React.FC<MentionsReachTrendChartProps> = ({
-  title = 'Mentions / Reach Trend',
+  title,
   data,
   loading = false,
 }) => {
+  const { t } = useTranslation();
+
   const normalized = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) return [];
     return data
@@ -51,7 +54,6 @@ const MentionsReachTrendChart: React.FC<MentionsReachTrendChartProps> = ({
   const hasData = normalized.length > 0;
   const chartData = normalized;
   const allZero = normalized.every((item) => Number(item.mentions) === 0 && Number(item.reach) === 0);
-  const hasReach = normalized.some((item) => Number(item.reach) > 0);
 
   const option = useMemo(() => ({
     grid: { left: 6, right: 10, top: 28, bottom: 20, containLabel: true },
@@ -82,14 +84,14 @@ const MentionsReachTrendChart: React.FC<MentionsReachTrendChartProps> = ({
     yAxis: [
       {
         type: 'value' as const,
-        name: 'Mentions',
+        name: t('chart.mentions'),
         nameTextStyle: { fontSize: 10, color: '#64748b' },
         axisLabel: { color: '#64748b', fontSize: 10 },
         splitLine: { lineStyle: { color: '#e2e8f0', type: 'dashed' as const } },
       },
       {
         type: 'value' as const,
-        name: 'Reach',
+        name: t('chart.reach'),
         nameTextStyle: { fontSize: 10, color: '#64748b' },
         axisLabel: { color: '#64748b', fontSize: 10 },
         splitLine: { show: false },
@@ -97,7 +99,7 @@ const MentionsReachTrendChart: React.FC<MentionsReachTrendChartProps> = ({
     ],
     series: [
       {
-        name: 'Mentions',
+        name: t('chart.mentions'),
         type: 'line' as const,
         smooth: true,
         symbolSize: 7,
@@ -108,7 +110,7 @@ const MentionsReachTrendChart: React.FC<MentionsReachTrendChartProps> = ({
         data: chartData.map((item) => item.mentions),
       },
       {
-        name: 'Reach',
+        name: t('chart.reach'),
         type: 'line' as const,
         smooth: true,
         yAxisIndex: 1,
@@ -120,7 +122,7 @@ const MentionsReachTrendChart: React.FC<MentionsReachTrendChartProps> = ({
         data: chartData.map((item) => item.reach),
       },
     ],
-  }), [normalized]);
+  }), [normalized, t]);
 
   return (
     <Card
@@ -136,15 +138,15 @@ const MentionsReachTrendChart: React.FC<MentionsReachTrendChartProps> = ({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
         <div style={{ minWidth: 0 }}>
           <Text strong style={{ display: 'block', fontSize: 13, lineHeight: 1.2 }}>
-            {title}
+            {title || t('chart.mentionsReachTrend')}
           </Text>
           <Text type="secondary" style={{ fontSize: 11 }}>
-            Verified from x_search / web_search only
+            {t('chart.verifiedFrom')}
           </Text>
         </div>
         <Space size={6} wrap>
-          <Tag color="blue"><RiseOutlined /> Mentions</Tag>
-          <Tag color="orange">Reach</Tag>
+          <Tag color="blue"><RiseOutlined /> {t('chart.mentions')}</Tag>
+          <Tag color="orange">{t('chart.reach')}</Tag>
         </Space>
       </div>
 
@@ -155,14 +157,20 @@ const MentionsReachTrendChart: React.FC<MentionsReachTrendChartProps> = ({
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
             <Space direction="vertical" size={4}>
-              <Tag color="blue"><LineChartOutlined /> 等待真实检索数据</Tag>
+              <Tag color="blue"><LineChartOutlined /> {t('chart.waitingData')}</Tag>
               <Text type="secondary" style={{ fontSize: 12 }}>
-                暂无通过 x_search / web_search 校验得到的趋势统计；不会展示示例或模拟曲线。
+                {t('chart.noTrendData')}
               </Text>
             </Space>
           }
         />
       )}
+
+      <div style={{ marginTop: 8, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+        <Text type="secondary" style={{ fontSize: 11, lineHeight: 1.6 }}>
+          {t('chart.trendExplanation')}
+        </Text>
+      </div>
     </Card>
   );
 };

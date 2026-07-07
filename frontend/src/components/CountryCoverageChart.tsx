@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Card, Empty, Space, Tag, Typography } from 'antd';
 import { GlobalOutlined } from '@ant-design/icons';
+import { useTranslation } from '../i18n/LanguageContext';
 
 const { Text } = Typography;
 
@@ -28,11 +29,13 @@ const toNumber = (value: unknown) => {
 };
 
 const CountryCoverageChart: React.FC<CountryCoverageChartProps> = ({
-  title = 'Countries with Most Coverage',
-  subtitle = 'Top countries by coverage volume',
+  title,
+  subtitle,
   data,
   loading = false,
 }) => {
+  const { t } = useTranslation();
+
   const normalized = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) return [];
     return data
@@ -63,10 +66,10 @@ const CountryCoverageChart: React.FC<CountryCoverageChartProps> = ({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
         <div style={{ minWidth: 0 }}>
           <Text strong style={{ display: 'block', fontSize: 13, lineHeight: 1.2 }}>
-            {title}
+            {title || t('countryCoverage.titleEn')}
           </Text>
           <Text type="secondary" style={{ fontSize: 11 }}>
-            {subtitle}
+            {subtitle || t('countryCoverage.subtitleEn')}
           </Text>
         </div>
         <Space size={6} wrap>
@@ -101,7 +104,7 @@ const CountryCoverageChart: React.FC<CountryCoverageChartProps> = ({
             })}
           </div>
         ) : (
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No country coverage data available" />
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('countryCoverage.noDataEn')} />
         )}
       </div>
     </Card>

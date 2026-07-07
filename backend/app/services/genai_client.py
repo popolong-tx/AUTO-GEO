@@ -105,7 +105,7 @@ class GenAIClient:
         prompt: str,
         model: Optional[str] = None,
         temperature: float = 0.7,
-        max_tokens: int = 4096,
+        max_tokens: int = 2048,
     ) -> str:
         """Send analysis request and return complete response.
 
@@ -129,7 +129,7 @@ class GenAIClient:
         tools: Optional[list[dict]] = None,
         image_inputs: Optional[list[dict]] = None,
         temperature: float = 0.7,
-        max_tokens: int = 4096,
+        max_tokens: int = 2048,
     ) -> str:
         """Send a tool-enabled analysis request.
 
@@ -160,7 +160,7 @@ class GenAIClient:
         model: Optional[str] = None,
         image_inputs: Optional[list[dict]] = None,
         temperature: float = 0.7,
-        max_tokens: int = 4096,
+        max_tokens: int = 2048,
     ) -> AsyncGenerator[str, None]:
         """Send analysis request and yield streaming response chunks."""
         model_id = self.get_model_id(model)

@@ -3,6 +3,7 @@ import {
   Modal, Input, Button, Space, Typography, List, Tag, Popconfirm, message,
 } from 'antd';
 import { ReloadOutlined, HistoryOutlined, RollbackOutlined } from '@ant-design/icons';
+import { useTranslation } from '../i18n/LanguageContext';
 import { updatePrompt, resetPrompt, getPromptHistory, rollbackPrompt } from '../services/api';
 
 const { TextArea } = Input;
@@ -19,6 +20,7 @@ interface PromptEditorProps {
 const PromptEditor: React.FC<PromptEditorProps> = ({
   open, topicId, currentPrompt, onClose, onSaved,
 }) => {
+  const { t } = useTranslation();
   const [content, setContent] = useState(currentPrompt);
   const [saving, setSaving] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -35,7 +37,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
       await updatePrompt(topicId, content);
       onSaved(content);
     } catch {
-      message.error('保存失败');
+      message.error(t('promptEditor.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -45,9 +47,9 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
     try {
       const res = await resetPrompt(topicId);
       setContent(res.data.prompt);
-      message.success('已恢复默认提示词');
+      message.success(t('promptEditor.resetSuccess'));
     } catch {
-      message.error('重置失败');
+      message.error(t('promptEditor.resetFailed'));
     }
   };
 
@@ -58,7 +60,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
       setHistory(res.data.versions);
       setShowHistory(true);
     } catch {
-      message.error('加载历史失败');
+      message.error(t('promptEditor.historyFailed'));
     } finally {
       setLoadingHistory(false);
     }
@@ -68,30 +70,30 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
     try {
       const res = await rollbackPrompt(topicId, version);
       setContent(res.data.content);
-      message.success(`已回滚到版本 ${version}`);
+      message.success(`${t('promptEditor.rollbackSuccess')} ${version}`);
       setShowHistory(false);
     } catch {
-      message.error('回滚失败');
+      message.error(t('promptEditor.rollbackFailed'));
     }
   };
 
   return (
     <Modal
-      title="编辑分析提示词"
+      title={t('promptEditor.title')}
       open={open}
       onCancel={onClose}
       width={800}
       footer={
         <Space>
-          <Button onClick={onClose}>取消</Button>
-          <Popconfirm title="确认恢复默认提示词？" onConfirm={handleReset}>
-            <Button icon={<ReloadOutlined />}>恢复默认</Button>
+          <Button onClick={onClose}>{t('promptEditor.cancel')}</Button>
+          <Popconfirm title={t('promptEditor.resetConfirm')} onConfirm={handleReset}>
+            <Button icon={<ReloadOutlined />}>{t('promptEditor.reset')}</Button>
           </Popconfirm>
           <Button icon={<HistoryOutlined />} onClick={loadHistory} loading={loadingHistory}>
-            历史版本
+            {t('promptEditor.history')}
           </Button>
           <Button type="primary" onClick={handleSave} loading={saving}>
-            保存
+            {t('promptEditor.save')}
           </Button>
         </Space>
       }
@@ -105,12 +107,12 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
         maxLength={5000}
       />
       <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-        提示词将用于指导 Grok 模型的分析方向和输出结构
+        {t('promptEditor.hint')}
       </Text>
 
       {showHistory && (
         <div style={{ marginTop: 16 }}>
-          <Text strong>历史版本</Text>
+          <Text strong>{t('promptEditor.history')}</Text>
           <List
             size="small"
             dataSource={history}
@@ -123,15 +125,15 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
                     icon={<RollbackOutlined />}
                     onClick={() => handleRollback(item.version)}
                   >
-                    恢复
+                    {t('promptEditor.restore')}
                   </Button>,
                 ]}
               >
                 <List.Item.Meta
                   title={
                     <Space>
-                      <Text>版本 {item.version}</Text>
-                      {item.is_current && <Tag color="blue">当前</Tag>}
+                      <Text>{t('promptEditor.version')} {item.version}</Text>
+                      {item.is_current && <Tag color="blue">{t('promptEditor.current')}</Tag>}
                     </Space>
                   }
                   description={

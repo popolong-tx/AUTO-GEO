@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Drawer, Descriptions, Empty, Space, Tag, Typography, Spin, Alert } from 'antd';
 import { LinkOutlined, WarningOutlined } from '@ant-design/icons';
+import { useTranslation } from '../i18n/LanguageContext';
 
 const { Text, Paragraph } = Typography;
 
@@ -38,6 +39,8 @@ const formatValue = (value: unknown) => {
 };
 
 const SourceDetailDrawer: React.FC<SourceDetailDrawerProps> = ({ open, loading = false, source, onClose }) => {
+  const { t } = useTranslation();
+
   const keywords = useMemo(() => {
     const raw = source?.keywords;
     if (Array.isArray(raw)) return raw.filter(Boolean).map(String);
@@ -50,12 +53,12 @@ const SourceDetailDrawer: React.FC<SourceDetailDrawerProps> = ({ open, loading =
     return [];
   }, [source?.keywords]);
 
-  const title = source?.title?.trim() || source?.media_name?.trim() || source?.mediaName?.trim() || '来源详情';
+  const title = source?.title?.trim() || source?.media_name?.trim() || source?.mediaName?.trim() || t('sourceDetail.title');
   const publishedTime = source?.published_time || source?.publishedTime;
   const mediaName = source?.media_name || source?.mediaName;
   const urlUnavailable = !source?.url || String(source?.summary || '').includes('URL unavailable');
   const placeholderUrl = Boolean(source?.url) && /(?:example|placeholder|dummy|fake)/i.test(String(source?.url || ''));
-  const inaccessibleReason = source?.access_note || source?.accessNote || source?.note || (urlUnavailable || placeholderUrl ? '该来源目前无法直接访问，可能是 URL 缺失、平台限制、权限限制、原始链接已失效，或原始数据里带有示例/占位链接。' : '');
+  const inaccessibleReason = source?.access_note || source?.accessNote || source?.note || (urlUnavailable || placeholderUrl ? t('sourceDetail.inaccessibleReason') : '');
 
   return (
     <Drawer
@@ -71,7 +74,7 @@ const SourceDetailDrawer: React.FC<SourceDetailDrawerProps> = ({ open, loading =
           <Spin />
         </div>
       ) : !source ? (
-        <Empty description="暂无来源详情" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <Empty description={t('sourceDetail.title')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
           {inaccessibleReason ? (
@@ -79,14 +82,14 @@ const SourceDetailDrawer: React.FC<SourceDetailDrawerProps> = ({ open, loading =
               type="warning"
               showIcon
               icon={<WarningOutlined />}
-              message="该来源部分内容可能无法直接访问"
+              message={t('sourceDetail.inaccessible')}
               description={inaccessibleReason}
             />
           ) : null}
 
           <div>
             <Text type="secondary" style={{ display: 'block', marginBottom: 6 }}>
-              URL
+              {t('sourceDetail.url')}
             </Text>
             {source?.url ? (
               <Text copyable={{ text: source.url }}>
@@ -101,18 +104,18 @@ const SourceDetailDrawer: React.FC<SourceDetailDrawerProps> = ({ open, loading =
           </div>
 
           <Descriptions bordered size="small" column={1} labelStyle={{ width: 180 }}>
-            <Descriptions.Item label="媒体名称">{formatValue(mediaName || source?.title)}</Descriptions.Item>
-            <Descriptions.Item label="发布时间">{formatValue(publishedTime)}</Descriptions.Item>
-            <Descriptions.Item label="国家/地区">{formatValue(source?.country)}</Descriptions.Item>
-            <Descriptions.Item label="语言">{formatValue(source?.language)}</Descriptions.Item>
-            <Descriptions.Item label="作者">{formatValue(source?.author)}</Descriptions.Item>
-            <Descriptions.Item label="Reach">{formatValue(source?.reach)}</Descriptions.Item>
-            <Descriptions.Item label="AVE">{formatValue(source?.ave)}</Descriptions.Item>
-            <Descriptions.Item label="情感">{formatValue(source?.sentiment)}</Descriptions.Item>
-            <Descriptions.Item label="摘要">
+            <Descriptions.Item label={t('sourceDetail.mediaName')}>{formatValue(mediaName || source?.title)}</Descriptions.Item>
+            <Descriptions.Item label={t('sourceDetail.publishTime')}>{formatValue(publishedTime)}</Descriptions.Item>
+            <Descriptions.Item label={t('sourceDetail.country')}>{formatValue(source?.country)}</Descriptions.Item>
+            <Descriptions.Item label={t('sourceDetail.language')}>{formatValue(source?.language)}</Descriptions.Item>
+            <Descriptions.Item label={t('sourceDetail.author')}>{formatValue(source?.author)}</Descriptions.Item>
+            <Descriptions.Item label={t('sourceDetail.reach')}>{formatValue(source?.reach)}</Descriptions.Item>
+            <Descriptions.Item label={t('sourceDetail.ave')}>{formatValue(source?.ave)}</Descriptions.Item>
+            <Descriptions.Item label={t('sourceDetail.sentiment')}>{formatValue(source?.sentiment)}</Descriptions.Item>
+            <Descriptions.Item label={t('sourceDetail.summary')}>
               {source?.summary ? <Paragraph style={{ marginBottom: 0 }}>{source.summary}</Paragraph> : '-'}
             </Descriptions.Item>
-            <Descriptions.Item label="关键词">
+            <Descriptions.Item label={t('sourceDetail.keywords')}>
               {keywords.length > 0 ? (
                 <Space size={[4, 8]} wrap>
                   {keywords.map((keyword) => (

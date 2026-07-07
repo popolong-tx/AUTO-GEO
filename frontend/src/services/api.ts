@@ -49,6 +49,8 @@ export const streamAnalysis = (
   customTitle?: string,
   socialUpdatesLimit: number = 10,
   forceRefresh: boolean = false,
+  reportLanguage: string = 'zh',
+  targetRegion: string = 'global',
 ) => {
   const controller = new AbortController();
 
@@ -61,7 +63,7 @@ export const streamAnalysis = (
   fetch(`${API_BASE}/analyze/stream`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ topic_id: topicId, model, custom_title: customTitle, social_updates_limit: socialUpdatesLimit, force_refresh: forceRefresh }),
+    body: JSON.stringify({ topic_id: topicId, model, custom_title: customTitle, social_updates_limit: socialUpdatesLimit, force_refresh: forceRefresh, report_language: reportLanguage, target_region: targetRegion }),
     signal: controller.signal,
   })
     .then(async (response) => {
