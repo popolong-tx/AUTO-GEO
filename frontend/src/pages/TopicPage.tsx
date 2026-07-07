@@ -222,7 +222,7 @@ const TopicPage: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `BYD_${isCustom ? customTitle : topic?.name || 'report'}_${Date.now()}.pdf`;
+      a.download = `AUTO_GEO_${isCustom ? customTitle : topic?.name || 'report'}_${Date.now()}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -740,7 +740,7 @@ const TopicPage: React.FC = () => {
                                                 const url = urlMatch[0].replace(/[.,，。；;:]+$/, '');
                                                 const lowered = url.toLowerCase();
                                                 if (/\b(example|placeholder|dummy|fake|tiktok.com\/[^\s]*\/example)\b/i.test(url)) return null;
-                                                if (/x\.com\/BYDGlobal\/status\/1808123456789123456/i.test(url)) return null;
+                                                if (/x\.com\/[A-Za-z]+Global\/status\/1808123456789123456/i.test(url)) return null;
                                                 if (/facebook\.com\/groups\/evowners\/posts\/abc123/i.test(url)) return null;
                                                 if (/tiktok\.com\/@techinsiderev\/video\/1234567890/i.test(url)) return null;
                                                 if (/(123456|234567|345678|456789|567890|678901|789012|890123)/.test(lowered)) return null;

@@ -98,9 +98,9 @@ async def test_webhook(req: IntegrationSettingsRequest, _user: str = Depends(req
         }]
 
     test_payload = {
-        'type': 'bydgeo.test',
-        'message': 'BYDGEO 通用信息 Webhook 测试成功',
-        'source': 'BYDGEO',
+        'type': 'autogeo.test',
+        'message': 'AUTO GEO 通用信息 Webhook 测试成功',
+        'source': 'AUTO GEO',
     }
     results = await asyncio.gather(*(async_post_event(t, {**test_payload, 'target': t.get('name', 'default')}) for t in enabled_targets))
 

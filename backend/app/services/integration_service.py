@@ -42,7 +42,7 @@ def post_event(target: dict, payload: dict[str, Any]) -> dict:
         data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
         headers={
             'Content-Type': 'application/json',
-            'X-BYDGEO-Webhook-Secret': target.get('secret', ''),
+            'X-AUTOGEO-Webhook-Secret': target.get('secret', ''),
         },
         method='POST',
     )

@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('bydgeo_token');
+  const token = localStorage.getItem('autogeo_token');
   if (token) {
     config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
@@ -55,7 +55,7 @@ export const streamAnalysis = (
   const controller = new AbortController();
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  const token = localStorage.getItem('bydgeo_token');
+  const token = localStorage.getItem('autogeo_token');
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }

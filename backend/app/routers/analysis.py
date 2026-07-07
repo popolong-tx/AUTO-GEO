@@ -178,7 +178,7 @@ async def run_analysis(req: AnalysisRequest, _user: str = Depends(require_auth))
                 )
                 timestamp = dt.now().strftime("%Y%m%d_%H%M%S")
                 report_id = str(_uuid.uuid4())[:8]
-                filename = f"BYD_{topic.name}_{timestamp}.pdf"
+                filename = f"AUTO_GEO_{topic.name}_{timestamp}.pdf"
                 add_report(req.topic_id, {
                     "id": report_id,
                     "analysis_id": result.id,
@@ -317,7 +317,7 @@ async def run_analysis_stream(req: AnalysisRequest, _user: str = Depends(require
                     )
                     timestamp = dt.now().strftime("%Y%m%d_%H%M%S")
                     report_id = str(_uuid.uuid4())[:8]
-                    filename = f"BYD_{topic_name}_{timestamp}.pdf"
+                    filename = f"AUTO_GEO_{topic_name}_{timestamp}.pdf"
 
                     add_report(req.topic_id, {
                         "id": report_id,

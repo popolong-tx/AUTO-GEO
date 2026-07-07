@@ -32,7 +32,7 @@ const ReportList: React.FC<ReportListProps> = ({ reports, loading, onRefresh }) 
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = report.filename || `BYD_report_${Date.now()}.pdf`;
+        a.download = report.filename || `AUTO_GEO_report_${Date.now()}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

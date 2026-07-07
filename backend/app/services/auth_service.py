@@ -26,12 +26,12 @@ class AuthService:
             self.username = cfg.get("username", "admin")
             self.password = cfg.get("password", "")
         else:
-            self.username = os.getenv("BYDGEO_ADMIN_USER", "admin")
-            self.password = os.getenv("BYDGEO_ADMIN_PASSWORD", "")
+            self.username = os.getenv("AUTOGEO_ADMIN_USER", "admin")
+            self.password = os.getenv("AUTOGEO_ADMIN_PASSWORD", "")
         self._sessions: dict[str, SessionUser] = {}
 
     def _hash(self, password: str) -> str:
-        salt = b"bydgeo-auth-salt"
+        salt = b"autogeo-auth-salt"
         return hashlib.sha256(salt + password.encode("utf-8")).hexdigest()
 
     def verify_password(self, username: str, password: str) -> bool:

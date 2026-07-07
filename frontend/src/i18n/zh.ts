@@ -1,6 +1,6 @@
 const zh = {
   // 通用
-  'app.title': 'BYD 舆情分析系统',
+  'app.title': 'AUTO GEO 舆情分析系统',
   'app.subtitle': '实时搜索 · 社交媒体 · 管理层洞察看板',
   'app.loading': '加载中...',
   'app.error': '错误',
@@ -31,16 +31,16 @@ const zh = {
   'nav.logout': '退出登录',
 
   // 话题名称和描述
-  'topic.goodwood.name': 'BYD Goodwood Festival of Speed活动',
-  'topic.goodwood.description': '2026年Goodwood活动海外舆情分析',
-  'topic.flashCharge.name': '比亚迪3月5日闪充中国发布会',
-  'topic.flashCharge.description': '2026年3月5日比亚迪「闪充中国」发布会舆情分析',
-  'topic.q1Report.name': '比亚迪第一季度财报',
-  'topic.q1Report.description': '2026年第一季度财报舆情与市场影响分析',
-  'topic.smartChip.name': '比亚迪5月28日智驾芯片发布会',
-  'topic.smartChip.description': '2026年5月28日智驾芯片发布会深度分析',
-  'topic.dod1260h.name': '美国国防部1260h清单事件',
-  'topic.dod1260h.description': '美国国防部将比亚迪纳入1260h清单舆情风险分析',
+  'topic.goodwood.name': 'Goodwood Festival of Speed活动',
+  'topic.goodwood.description': '2026年汽车行业参加Goodwood Festival of Speed活动海外舆情分析',
+  'topic.flashCharge.name': '新能源汽车闪充技术发布会',
+  'topic.flashCharge.description': '新能源汽车闪充技术发布会舆情分析',
+  'topic.q1Report.name': '汽车行业第一季度财报',
+  'topic.q1Report.description': '汽车行业第一季度财报舆情与市场影响分析',
+  'topic.smartChip.name': '智能驾驶芯片发布会',
+  'topic.smartChip.description': '智能驾驶芯片发布会深度分析',
+  'topic.dod1260h.name': '国防部1260h清单事件',
+  'topic.dod1260h.description': '汽车行业企业被列入国防部1260h清单舆情风险分析',
   'topic.custom.name': '通用舆情报告',
   'topic.custom.description': '自定义标题，生成专业汽车行业舆情分析报告',
 
@@ -249,9 +249,9 @@ const zh = {
   'settings.webhookEnabled': '启用通用信息 Webhook',
   'settings.webhookEnabledHint': '开启后支持统一对外通知与外部系统联动。',
   'settings.webhookUrl': '默认 Webhook URL（兼容旧模式）',
-  'settings.webhookUrlPlaceholder': '例如：https://your-system.example.com/webhook/bydgeo',
+  'settings.webhookUrlPlaceholder': '例如：https://your-system.example.com/webhook/autogeo',
   'settings.webhookSecret': '默认 Webhook Secret（兼容旧模式）',
-  'settings.webhookSecretPlaceholder': '用于请求头 X-BYDGEO-Webhook-Secret',
+  'settings.webhookSecretPlaceholder': '用于请求头 X-AUTOGEO-Webhook-Secret',
   'settings.events': '事件开关',
   'settings.events.analysisCompleted': '分析完成',
   'settings.events.reportGenerated': '报告导出',
@@ -280,7 +280,7 @@ const zh = {
   'settings.testResult.responsePreview': '返回预览',
 
   // 新手引导
-  'guide.welcome': '欢迎使用 BYD 舆情分析系统',
+  'guide.welcome': '欢迎使用 AUTO GEO 舆情分析系统',
   'guide.welcomeDescription': '这是一个基于 Grok AI 的舆情监测与分析平台，支持实时搜索、社交媒体分析和管理层看板。',
   'guide.howToUse': '如何使用',
   'guide.step1': '选择一个分析主题，或使用"通用报告"自定义标题',

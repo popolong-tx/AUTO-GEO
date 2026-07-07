@@ -140,7 +140,7 @@ class PDFGenerator:
         # Header text
         canvas.setFont(FONT_NAME if FONT_NAME else "Helvetica", 8)
         canvas.setFillColor(colors.HexColor("#718096"))
-        canvas.drawString(20*mm, A4[1] - 13*mm, _wrap_chinese_text("BYD GEO 舆情分析报告"))
+        canvas.drawString(20*mm, A4[1] - 13*mm, _wrap_chinese_text("AUTO GEO 舆情分析报告"))
         # Footer
         canvas.line(20*mm, 15*mm, A4[0] - 20*mm, 15*mm)
         canvas.drawString(20*mm, 10*mm, _wrap_chinese_text(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M')}"))
@@ -151,7 +151,7 @@ class PDFGenerator:
         """Create cover page elements."""
         elements = []
         elements.append(Spacer(1, 80*mm))
-        elements.append(Paragraph(_wrap_chinese_text("BYD GEO"), self.styles["CoverTitle"]))
+        elements.append(Paragraph(_wrap_chinese_text("AUTO GEO"), self.styles["CoverTitle"]))
         elements.append(Paragraph(_wrap_chinese_text("舆情分析报告"), self.styles["CoverTitle"]))
         elements.append(Spacer(1, 15*mm))
         elements.append(Paragraph(_wrap_chinese_text(topic_name), self.styles["CoverSubtitle"]))

@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/reports", tags=["reports"])
 
 _pdf_generator = None
 _storage_service = None
-_reports_bucket = "byd-geo-reports"
+_reports_bucket = "autogeo-reports"
 
 
 def set_dependencies(pdf_generator, storage_service, bucket):
@@ -61,7 +61,7 @@ async def generate_report(analysis_id: str, _user: str = Depends(require_auth)):
     # Record report in history
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_id = str(uuid.uuid4())[:8]
-    filename = f"BYD_{topic_name}_{timestamp}.pdf"
+    filename = f"AUTO_GEO_{topic_name}_{timestamp}.pdf"
 
     report_record = {
         "id": report_id,
@@ -120,7 +120,7 @@ async def download_report(topic_id: str, report_id: str):
         model=model,
     )
 
-    filename = report.get("filename", f"BYD_{topic_name}.pdf")
+    filename = report.get("filename", f"AUTO_GEO_{topic_name}.pdf")
     encoded_filename = quote(filename)
 
     async def iter_pdf():

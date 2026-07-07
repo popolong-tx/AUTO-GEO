@@ -8,13 +8,13 @@ const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) =
   const location = useLocation();
 
   useEffect(() => {
-    const token = localStorage.getItem('bydgeo_token');
+    const token = localStorage.getItem('autogeo_token');
     if (!token) {
       setOk(false);
       return;
     }
     me().then(() => setOk(true)).catch(() => {
-      localStorage.removeItem('bydgeo_token');
+      localStorage.removeItem('autogeo_token');
       setOk(false);
     });
   }, []);

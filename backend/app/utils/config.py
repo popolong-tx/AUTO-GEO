@@ -15,8 +15,8 @@ class AppConfig(BaseModel):
 
     # Object Storage
     os_namespace: str = ""
-    os_bucket_reports: str = "byd-geo-reports"
-    os_bucket_data: str = "byd-geo-data"
+    os_bucket_reports: str = "autogeo-reports"
+    os_bucket_data: str = "autogeo-data"
     os_config_profile: str = "DEFAULT"
     oci_region: str = "us-chicago-1"
 
@@ -59,8 +59,8 @@ def load_config() -> AppConfig:
         genai_api_key=os.getenv("OPENAI_API_KEY", os.getenv("OCI_GENAI_API_KEY", "")),
         genai_model=os.getenv("OCI_GENAI_MODEL", os.getenv("OPENAI_MODEL", "xai.grok-4.20-multi-agent-0309")),
         os_namespace=os.getenv("OCI_OBJECT_STORAGE_NAMESPACE", ""),
-        os_bucket_reports=os.getenv("OCI_OBJECT_STORAGE_BUCKET", "byd-geo-reports"),
-        os_bucket_data=os.getenv("OCI_OBJECT_STORAGE_DATA_BUCKET", "byd-geo-data"),
+        os_bucket_reports=os.getenv("OCI_OBJECT_STORAGE_BUCKET", "autogeo-reports"),
+        os_bucket_data=os.getenv("OCI_OBJECT_STORAGE_DATA_BUCKET", "autogeo-data"),
         os_config_profile=os.getenv("OCI_CONFIG_PROFILE", "DEFAULT"),
         oci_region=os.getenv("OCI_REGION", "us-chicago-1"),
         api_host=os.getenv("API_HOST", "0.0.0.0"),

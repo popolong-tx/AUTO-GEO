@@ -1,4 +1,4 @@
-// Refined premium theme for BYD GEO
+// Refined premium theme for AUTO GEO
 export const theme = {
   token: {
     colorPrimary: '#1f6feb',

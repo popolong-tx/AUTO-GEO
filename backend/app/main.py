@@ -11,8 +11,8 @@ from app.services.pdf_generator import PDFGenerator
 from app.routers import topics, analysis, reports, settings, auth, dashboard
 
 app = FastAPI(
-    title="BYD GEO 舆情分析系统",
-    description="比亚迪舆情监测与分析平台 - 基于 OCI GenAI Grok 模型",
+    title="AUTO GEO 舆情分析系统",
+    description="汽车行业舆情监测与分析平台 - 基于 OCI GenAI Grok 模型",
     version="1.0.0",
 )
 

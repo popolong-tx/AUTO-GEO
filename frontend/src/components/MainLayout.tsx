@@ -95,7 +95,7 @@ const MainLayout: React.FC = () => {
           <Tag color="blue">{t('home.tags.realtime')}</Tag>
           <Tag color="cyan">Grok + Search</Tag>
           <LanguageSwitcher />
-          <Button size="small" onClick={async () => { localStorage.removeItem('bydgeo_token'); await apiLogout().catch(() => {}); message.success(t('nav.logout')); navigate('/login'); }}>
+          <Button size="small" onClick={async () => { localStorage.removeItem('autogeo_token'); await apiLogout().catch(() => {}); message.success(t('nav.logout')); navigate('/login'); }}>
             {t('nav.logout')}
           </Button>
         </Space>

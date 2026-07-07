@@ -14,7 +14,7 @@ const translations: Record<Language, Record<string, string>> = { zh, en };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'bydgeo_language';
+const STORAGE_KEY = 'autogeo_language';
 
 function getStoredLanguage(): Language {
   try {

@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('bydgeo_token');
+    const token = localStorage.getItem('autogeo_token');
     if (token) {
       navigate('/', { replace: true });
     }
@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       const resp = await login(values.username, values.password);
-      localStorage.setItem('bydgeo_token', resp.data.token);
+      localStorage.setItem('autogeo_token', resp.data.token);
       message.success(t('login.success'));
       navigate('/');
     } catch (e: any) {
@@ -43,7 +43,7 @@ const LoginPage: React.FC = () => {
       <Card style={{ width: 420, borderRadius: 18, boxShadow: '0 18px 48px rgba(0,0,0,0.28)' }}>
         <Space direction="vertical" size={12} style={{ width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Tag color="blue">BYD GEO</Tag>
+            <Tag color="blue">AUTO GEO</Tag>
             <LanguageSwitcher size="small" />
           </div>
           <Title level={3} style={{ margin: 0 }}>{t('login.title')}</Title>

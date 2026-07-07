@@ -1,6 +1,6 @@
 const en = {
   // Common
-  'app.title': 'BYD Sentiment Analysis System',
+  'app.title': 'AUTO GEO Sentiment Analysis System',
   'app.subtitle': 'Real-time Search · Social Media · Executive Dashboard',
   'app.loading': 'Loading...',
   'app.error': 'Error',
@@ -31,16 +31,16 @@ const en = {
   'nav.logout': 'Logout',
 
   // Topic Names & Descriptions
-  'topic.goodwood.name': 'BYD Goodwood Festival of Speed',
-  'topic.goodwood.description': 'Sentiment analysis for BYD at 2026 Goodwood Festival of Speed',
-  'topic.flashCharge.name': 'BYD Flash Charge China Launch',
-  'topic.flashCharge.description': 'Sentiment analysis for BYD Flash Charge China launch event on March 5, 2026',
-  'topic.q1Report.name': 'BYD Q1 Financial Report',
-  'topic.q1Report.description': 'Q1 2026 financial report sentiment and market impact analysis',
-  'topic.smartChip.name': 'BYD Smart Driving Chip Launch',
-  'topic.smartChip.description': 'Deep analysis of BYD smart driving chip launch on May 28, 2026',
+  'topic.goodwood.name': 'Goodwood Festival of Speed',
+  'topic.goodwood.description': 'Sentiment analysis for automotive industry at 2026 Goodwood Festival of Speed',
+  'topic.flashCharge.name': 'EV Fast Charging Technology Launch',
+  'topic.flashCharge.description': 'Sentiment analysis for EV fast charging technology launch event',
+  'topic.q1Report.name': 'Automotive Q1 Financial Report',
+  'topic.q1Report.description': 'Automotive industry Q1 financial report sentiment and market impact analysis',
+  'topic.smartChip.name': 'Smart Driving Chip Launch',
+  'topic.smartChip.description': 'Deep analysis of smart driving chip launch on May 28, 2026',
   'topic.dod1260h.name': 'US DoD 1260h List',
-  'topic.dod1260h.description': 'Sentiment risk analysis of BYD being added to US DoD 1260h list',
+  'topic.dod1260h.description': 'Sentiment risk analysis of automotive company being added to US DoD 1260h list',
   'topic.custom.name': 'Custom Report',
   'topic.custom.description': 'Custom title, generate professional automotive industry sentiment analysis report',
 
@@ -249,9 +249,9 @@ const en = {
   'settings.webhookEnabled': 'Enable Webhook',
   'settings.webhookEnabledHint': 'Enable unified external notifications and system integration.',
   'settings.webhookUrl': 'Default Webhook URL (Legacy)',
-  'settings.webhookUrlPlaceholder': 'e.g.: https://your-system.example.com/webhook/bydgeo',
+  'settings.webhookUrlPlaceholder': 'e.g.: https://your-system.example.com/webhook/autogeo',
   'settings.webhookSecret': 'Default Webhook Secret (Legacy)',
-  'settings.webhookSecretPlaceholder': 'For request header X-BYDGEO-Webhook-Secret',
+  'settings.webhookSecretPlaceholder': 'For request header X-AUTOGEO-Webhook-Secret',
   'settings.events': 'Event Triggers',
   'settings.events.analysisCompleted': 'Analysis Completed',
   'settings.events.reportGenerated': 'Report Generated',
@@ -280,7 +280,7 @@ const en = {
   'settings.testResult.responsePreview': 'Response Preview',
 
   // Guide
-  'guide.welcome': 'Welcome to BYD Sentiment Analysis System',
+  'guide.welcome': 'Welcome to AUTO GEO Sentiment Analysis System',
   'guide.welcomeDescription': 'This is an AI-powered sentiment monitoring and analysis platform supporting real-time search, social media analysis, and executive dashboards.',
   'guide.howToUse': 'How to Use',
   'guide.step1': 'Select an analysis topic, or use "Custom Report" for custom titles',
