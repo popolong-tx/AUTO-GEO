@@ -1,6 +1,6 @@
-# BYD GEO 舆情分析系统
+# 汽车行业 GEO 舆情分析系统
 
-基于 OCI GenAI Grok 模型的比亚迪舆情监测与分析平台，部署在 Oracle Cloud Infrastructure (OCI) Functions 上。
+基于 OCI GenAI Grok 模型的汽车行业舆情监测与分析平台，部署在 Oracle Cloud Infrastructure (OCI) Functions 上。
 
 ## 功能特性
 
@@ -152,4 +152,4 @@ https://inference.generativeai.us-chicago-1.oci.oraclecloud.com/20231130/actions
 
 ## 许可证
 
-内部演示使用，仅供 BYD 舆情分析团队。
+内部演示使用，仅供  舆情分析团队。
