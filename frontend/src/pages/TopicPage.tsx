@@ -10,7 +10,7 @@ import {
 import { useParams } from 'react-router-dom';
 import { useTranslation } from '../i18n/LanguageContext';
 import {
-  getTopic, streamAnalysis, generateReport, listReports, uploadReferenceFile, getDashboard, getDashboardSources,
+  getTopic, streamAnalysis, generateReport, listReports, uploadReferenceFile, getDashboard, getDashboardSources, getAnalysisHistory,
 } from '../services/api';
 
 import PromptEditor from '../components/PromptEditor';
@@ -110,9 +110,9 @@ const TopicPage: React.FC = () => {
     loadReports();
     loadDashboard();
     loadDashboardSources();
+    loadLatestAnalysis();
     setCustomTitle('');
     setUploadedFiles([]);
-    setAnalysisResult(null);
     setStreamContent('');
     setPreviewFile(null);
     setSocialUpdatesLimit(10);
@@ -125,6 +125,22 @@ const TopicPage: React.FC = () => {
       .then((res) => setReports(res.data.reports))
       .catch(() => {})
       .finally(() => setLoadingReports(false));
+  };
+
+  const loadLatestAnalysis = () => {
+    if (!topicId) return;
+    getAnalysisHistory(topicId)
+      .then((res) => {
+        const results = res.data.results || [];
+        if (results.length > 0) {
+          // 获取最新的分析结果（按时间排序，第一个是最新的）
+          const latest = results[0];
+          setAnalysisResult(latest);
+        } else {
+          setAnalysisResult(null);
+        }
+      })
+      .catch(() => setAnalysisResult(null));
   };
 
   const loadDashboard = () => {

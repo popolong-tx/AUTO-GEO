@@ -1,0 +1,197 @@
+- generic [ref=f5e67]:
+  - banner [ref=f5e68]:
+    - generic [ref=f5e69]:
+      - generic [ref=f5e70]: GEO
+      - generic [ref=f5e71]:
+        - heading "AUTO GEO Sentiment Analysis System" [level=4] [ref=f5e559]
+        - text: Real-time Search · Social Media · Executive Dashboard
+    - generic [ref=f5e73]:
+      - generic [ref=f5e75]: Real-time
+      - generic [ref=f5e77]: Grok + Search
+      - generic [ref=f5e79]:
+        - img "global" [ref=f5e81]:
+          - img [ref=f5e82]
+        - generic [ref=f5e85] [cursor=pointer]:
+          - generic: English
+          - generic [ref=f5e87]:
+            - combobox [active] [ref=f5e89]
+            - generic "English" [ref=f5e560]
+          - generic:
+            - img:
+              - img
+      - button "Logout" [ref=f5e561] [cursor=pointer]:
+        - generic [ref=f5e93]: Logout
+  - generic [ref=f5e94]:
+    - complementary [ref=f5e95]:
+      - generic [ref=f5e96]:
+        - generic [ref=f5e98]:
+          - generic [ref=f5e99]: Topic Analysis
+          - generic [ref=f5e100]: Select a topic to start analysis. The system provides deep sentiment insights based on Grok + Search Tools + External Data.
+        - menu [ref=f5e101]:
+          - menuitem "dashboard Overview" [ref=f5e562] [cursor=pointer]:
+            - img "dashboard" [ref=f5e103]:
+              - img [ref=f5e104]
+            - generic [ref=f5e106]: Overview
+          - menuitem "rocket Goodwood Festival" [ref=f5e563] [cursor=pointer]:
+            - img "rocket" [ref=f5e108]:
+              - img [ref=f5e109]
+            - generic [ref=f5e111]: Goodwood Festival
+          - menuitem "thunderbolt Flash Charge Launch" [ref=f5e564] [cursor=pointer]:
+            - img "thunderbolt" [ref=f5e113]:
+              - img [ref=f5e114]
+            - generic [ref=f5e116]: Flash Charge Launch
+          - menuitem "bar-chart Q1 Financial Report" [ref=f5e565] [cursor=pointer]:
+            - img "bar-chart" [ref=f5e118]:
+              - img [ref=f5e119]
+            - generic [ref=f5e121]: Q1 Financial Report
+          - menuitem "bug Smart Driving Chip" [ref=f5e566] [cursor=pointer]:
+            - img "bug" [ref=f5e123]:
+              - img [ref=f5e124]
+            - generic [ref=f5e127]: Smart Driving Chip
+          - menuitem "safety 1260h List" [ref=f5e567] [cursor=pointer]:
+            - img "safety" [ref=f5e129]:
+              - img [ref=f5e130]
+            - generic [ref=f5e133]: 1260h List
+          - menuitem "file-text Custom Report" [ref=f5e568] [cursor=pointer]:
+            - img "file-text" [ref=f5e135]:
+              - img [ref=f5e136]
+            - generic [ref=f5e138]: Custom Report
+          - menuitem "setting Settings" [ref=f5e569] [cursor=pointer]:
+            - img "setting" [ref=f5e140]:
+              - img [ref=f5e141]
+            - generic [ref=f5e143]: Settings
+      - img "left" [ref=f5e145] [cursor=pointer]:
+        - img [ref=f5e146]
+    - main [ref=f5e148]:
+      - generic [ref=f5e331]:
+        - generic [ref=f5e334]:
+          - heading "🏁 Goodwood Festival of Speed" [level=3] [ref=f5e570]
+          - text: Sentiment analysis for automotive industry at 2026 Goodwood Festival of Speed
+          - generic [ref=f5e337]:
+            - strong [ref=f5e340]: Analysis Console
+            - generic [ref=f5e341]: Model
+            - generic [ref=f5e343] [cursor=pointer]:
+              - generic [ref=f5e345]:
+                - combobox [ref=f5e347]
+                - generic "Grok 4.20 - Deep Analysis / Default" [ref=f5e571]
+              - generic:
+                - img:
+                  - img
+            - generic [ref=f5e349]: Social
+            - generic [ref=f5e351] [cursor=pointer]:
+              - generic [ref=f5e353]:
+                - combobox [ref=f5e355]
+                - generic "10 items" [ref=f5e572]
+              - generic:
+                - img:
+                  - img
+            - generic [ref=f5e357]: Report Language
+            - generic [ref=f5e359] [cursor=pointer]:
+              - generic [ref=f5e361]:
+                - combobox [ref=f5e363]
+                - generic "English Report" [ref=f5e364]
+              - generic:
+                - img:
+                  - img
+            - generic [ref=f5e365]: Target Region
+            - generic [ref=f5e367] [cursor=pointer]:
+              - generic [ref=f5e369]:
+                - combobox [ref=f5e371]
+                - generic "Global" [ref=f5e573]
+              - generic:
+                - img:
+                  - img
+            - button "upload Upload Reference" [ref=f5e574] [cursor=pointer]:
+              - img "upload" [ref=f5e379]:
+                - img [ref=f5e380]
+              - generic [ref=f5e382]: Upload Reference
+            - button "edit Edit Prompt" [ref=f5e575] [cursor=pointer]:
+              - img "edit" [ref=f5e386]:
+                - img [ref=f5e387]
+              - generic [ref=f5e389]: Edit Prompt
+            - button "play-circle Start Analysis" [ref=f5e576] [cursor=pointer]:
+              - img "play-circle" [ref=f5e393]:
+                - img [ref=f5e394]
+              - generic [ref=f5e397]: Start Analysis
+            - button "reload Re-analyze" [ref=f5e577] [cursor=pointer]:
+              - img "reload" [ref=f5e401]:
+                - img [ref=f5e402]
+              - generic [ref=f5e404]: Re-analyze
+        - generic [ref=f5e405]:
+          - tablist [ref=f5e406]:
+            - generic [ref=f5e408]:
+              - tab "Analysis Report" [selected] [ref=f5e578] [cursor=pointer]
+              - tab "file-pdf History Reports 1" [ref=f5e579] [cursor=pointer]:
+                - generic [ref=f5e413]:
+                  - img "file-pdf" [ref=f5e415]:
+                    - img [ref=f5e416]
+                  - generic [ref=f5e418]: History Reports
+                  - generic [ref=f5e420]: "1"
+          - tabpanel "Analysis Report" [ref=f5e580]:
+            - generic [ref=f5e424]:
+              - generic [ref=f5e427]:
+                - generic [ref=f5e581]:
+                  - generic [ref=f5e582]:
+                    - strong [ref=f5e584]: Mentions / Reach Trend
+                    - text: Verified from x_search / web_search only
+                  - generic [ref=f5e585]:
+                    - generic [ref=f5e587]:
+                      - img "rise" [ref=f5e588]:
+                        - img [ref=f5e589]
+                      - text: Mentions
+                    - generic [ref=f5e592]: Reach
+                - generic [ref=f5e593]:
+                  - img "No data" [ref=f5e595]
+                  - generic [ref=f5e602]:
+                    - generic [ref=f5e604]:
+                      - img "line-chart" [ref=f5e605]:
+                        - img [ref=f5e606]
+                      - text: Waiting for verified data
+                    - generic [ref=f5e608]: No verified trend data from x_search / web_search yet. Example or simulated curves will not be displayed.
+                - generic [ref=f5e609]: Mentions represent verified social/news references from x_search and web_search. Reach is shown only when verifiable engagement or view data is available.
+              - generic [ref=f5e457]:
+                - generic [ref=f5e458]:
+                  - button "expanded Structured Insights Social Media N/A Country Coverage" [expanded] [ref=f5e610] [cursor=pointer]:
+                    - img "expanded" [ref=f5e461]:
+                      - img [ref=f5e462]
+                    - generic [ref=f5e465]:
+                      - strong [ref=f5e468]: Structured Insights
+                      - generic [ref=f5e470]: Social Media N/A
+                      - generic [ref=f5e472]: Country Coverage
+                  - generic [ref=f5e477]:
+                    - generic [ref=f5e480]:
+                      - generic [ref=f5e611]:
+                        - generic [ref=f5e612]:
+                          - strong [ref=f5e614]: Countries with Most Coverage
+                          - text: Top countries by coverage volume
+                        - generic [ref=f5e617]:
+                          - img "global" [ref=f5e618]:
+                            - img [ref=f5e619]
+                          - text: X / web-search
+                      - generic [ref=f5e622]:
+                        - img "No data" [ref=f5e624]
+                        - generic [ref=f5e630]: No country coverage data available
+                    - generic [ref=f5e502]:
+                      - generic [ref=f5e503]:
+                        - generic [ref=f5e504]:
+                          - strong [ref=f5e506]: Latest Social Updates
+                          - text: No real-time updates
+                        - generic [ref=f5e507]: Social
+                      - generic [ref=f5e510]:
+                        - button "expanded Latest Updates Placeholder display" [expanded] [ref=f5e631] [cursor=pointer]:
+                          - img "expanded" [ref=f5e513]:
+                            - img [ref=f5e514]
+                          - generic [ref=f5e516]: Latest Updates Placeholder display
+                        - generic [ref=f5e519]: No social media updates with verified public URLs found.
+                - generic [ref=f5e520]:
+                  - button "expanded Executive Summary" [expanded] [ref=f5e632] [cursor=pointer]:
+                    - img "expanded" [ref=f5e523]:
+                      - img [ref=f5e524]
+                    - strong [ref=f5e528]: Executive Summary
+                  - generic [ref=f5e531]:
+                    - img "No data" [ref=f5e633]
+                    - generic [ref=f5e539]: No executive summary available
+                - button "collapsed Detailed Report" [ref=f5e634] [cursor=pointer]:
+                  - img "collapsed" [ref=f5e543]:
+                    - img [ref=f5e544]
+                  - strong [ref=f5e548]: Detailed Report

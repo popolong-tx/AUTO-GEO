@@ -1,0 +1,201 @@
+- generic [ref=f5e67]:
+  - banner [ref=f5e68]:
+    - generic [ref=f5e69]:
+      - generic [ref=f5e70]: GEO
+      - generic [ref=f5e71]:
+        - heading "AUTO GEO 舆情分析系统" [level=4] [ref=f5e72]
+        - text: 实时搜索 · 社交媒体 · 管理层洞察看板
+    - generic [ref=f5e73]:
+      - generic [ref=f5e75]: 实时舆情
+      - generic [ref=f5e77]: Grok + Search
+      - generic [ref=f5e79]:
+        - img "global" [ref=f5e81]:
+          - img [ref=f5e82]
+        - generic [ref=f5e85] [cursor=pointer]:
+          - generic [ref=f5e87]:
+            - combobox [expanded] [active] [ref=f5e89]:
+              - listbox [ref=f5e549]:
+                - option "简体中文" [selected] [ref=f5e550]:
+                  - generic [ref=f5e551]: 简体中文
+                - option "English" [ref=f5e552]:
+                  - generic [ref=f5e553]: English
+            - generic "简体中文" [ref=f5e90]
+          - generic:
+            - img:
+              - img
+      - button "退出登录" [ref=f5e92] [cursor=pointer]:
+        - generic [ref=f5e93]: 退出登录
+  - generic [ref=f5e94]:
+    - complementary [ref=f5e95]:
+      - generic [ref=f5e96]:
+        - generic [ref=f5e98]:
+          - generic [ref=f5e99]: 专题分析
+          - generic [ref=f5e100]: 选择话题开始分析，系统将基于 Grok + 搜索工具 + 外部数据联合分析提供深度舆情洞察。
+        - menu [ref=f5e101]:
+          - menuitem "dashboard 概览" [ref=f5e102] [cursor=pointer]:
+            - img "dashboard" [ref=f5e103]:
+              - img [ref=f5e104]
+            - generic [ref=f5e106]: 概览
+          - menuitem "rocket Goodwood 活动" [ref=f5e107] [cursor=pointer]:
+            - img "rocket" [ref=f5e108]:
+              - img [ref=f5e109]
+            - generic [ref=f5e111]: Goodwood 活动
+          - menuitem "thunderbolt 闪充发布会" [ref=f5e112] [cursor=pointer]:
+            - img "thunderbolt" [ref=f5e113]:
+              - img [ref=f5e114]
+            - generic [ref=f5e116]: 闪充发布会
+          - menuitem "bar-chart Q1财报" [ref=f5e117] [cursor=pointer]:
+            - img "bar-chart" [ref=f5e118]:
+              - img [ref=f5e119]
+            - generic [ref=f5e121]: Q1财报
+          - menuitem "bug 智驾芯片" [ref=f5e122] [cursor=pointer]:
+            - img "bug" [ref=f5e123]:
+              - img [ref=f5e124]
+            - generic [ref=f5e127]: 智驾芯片
+          - menuitem "safety 1260h清单" [ref=f5e128] [cursor=pointer]:
+            - img "safety" [ref=f5e129]:
+              - img [ref=f5e130]
+            - generic [ref=f5e133]: 1260h清单
+          - menuitem "file-text 通用报告" [ref=f5e134] [cursor=pointer]:
+            - img "file-text" [ref=f5e135]:
+              - img [ref=f5e136]
+            - generic [ref=f5e138]: 通用报告
+          - menuitem "setting 配置中心" [ref=f5e139] [cursor=pointer]:
+            - img "setting" [ref=f5e140]:
+              - img [ref=f5e141]
+            - generic [ref=f5e143]: 配置中心
+      - img "left" [ref=f5e145] [cursor=pointer]:
+        - img [ref=f5e146]
+    - main [ref=f5e148]:
+      - generic [ref=f5e331]:
+        - generic [ref=f5e334]:
+          - heading "🏁 Goodwood Festival of Speed活动" [level=3] [ref=f5e335]
+          - text: 2026年汽车行业参加Goodwood Festival of Speed活动海外舆情分析
+          - generic [ref=f5e337]:
+            - strong [ref=f5e340]: 分析控制台
+            - generic [ref=f5e341]: 模型
+            - generic [ref=f5e343] [cursor=pointer]:
+              - generic [ref=f5e345]:
+                - combobox [ref=f5e347]
+                - generic "Grok 4.20 - 复杂分析 / 默认" [ref=f5e348]
+              - generic:
+                - img:
+                  - img
+            - generic [ref=f5e349]: 社媒
+            - generic [ref=f5e351] [cursor=pointer]:
+              - generic [ref=f5e353]:
+                - combobox [ref=f5e355]
+                - generic "10 条" [ref=f5e356]
+              - generic:
+                - img:
+                  - img
+            - generic [ref=f5e357]: 报告语言
+            - generic [ref=f5e359] [cursor=pointer]:
+              - generic [ref=f5e361]:
+                - combobox [ref=f5e363]
+                - generic "English Report" [ref=f5e364]
+              - generic:
+                - img:
+                  - img
+            - generic [ref=f5e365]: 目标区域
+            - generic [ref=f5e367] [cursor=pointer]:
+              - generic [ref=f5e369]:
+                - combobox [ref=f5e371]
+                - generic "全球" [ref=f5e372]
+              - generic:
+                - img:
+                  - img
+            - button "upload 上载参考文件" [ref=f5e377] [cursor=pointer]:
+              - img "upload" [ref=f5e379]:
+                - img [ref=f5e380]
+              - generic [ref=f5e382]: 上载参考文件
+            - button "edit 编辑提示词" [ref=f5e384] [cursor=pointer]:
+              - img "edit" [ref=f5e386]:
+                - img [ref=f5e387]
+              - generic [ref=f5e389]: 编辑提示词
+            - button "play-circle 开始分析" [ref=f5e391] [cursor=pointer]:
+              - img "play-circle" [ref=f5e393]:
+                - img [ref=f5e394]
+              - generic [ref=f5e397]: 开始分析
+            - button "reload 重新分析" [ref=f5e399] [cursor=pointer]:
+              - img "reload" [ref=f5e401]:
+                - img [ref=f5e402]
+              - generic [ref=f5e404]: 重新分析
+        - generic [ref=f5e405]:
+          - tablist [ref=f5e406]:
+            - generic [ref=f5e408]:
+              - tab "分析报告" [selected] [ref=f5e410] [cursor=pointer]
+              - tab "file-pdf 历史报告 1" [ref=f5e412] [cursor=pointer]:
+                - generic [ref=f5e413]:
+                  - img "file-pdf" [ref=f5e415]:
+                    - img [ref=f5e416]
+                  - generic [ref=f5e418]: 历史报告
+                  - generic [ref=f5e420]: "1"
+          - tabpanel "分析报告" [ref=f5e423]:
+            - generic [ref=f5e424]:
+              - generic [ref=f5e427]:
+                - generic [ref=f5e428]:
+                  - generic [ref=f5e429]:
+                    - strong [ref=f5e431]: 声量 / 触达趋势
+                    - text: 仅基于 x_search / web_search 校验数据
+                  - generic [ref=f5e432]:
+                    - generic [ref=f5e434]:
+                      - img "rise" [ref=f5e435]:
+                        - img [ref=f5e436]
+                      - text: 声量
+                    - generic [ref=f5e439]: 触达
+                - generic [ref=f5e440]:
+                  - img "暂无数据" [ref=f5e442]
+                  - generic [ref=f5e449]:
+                    - generic [ref=f5e451]:
+                      - img "line-chart" [ref=f5e452]:
+                        - img [ref=f5e453]
+                      - text: 等待真实检索数据
+                    - generic [ref=f5e455]: 暂无通过 x_search / web_search 校验得到的趋势统计；不会展示示例或模拟曲线。
+                - generic [ref=f5e456]: Mentions 表示通过 x_search / web_search 校验后的真实社媒或新闻提及数量；Reach 仅在来源提供可核验互动或浏览数据时展示。
+              - generic [ref=f5e457]:
+                - generic [ref=f5e458]:
+                  - button "expanded 结构化洞察 社交媒体 暂无 国家覆盖" [expanded] [ref=f5e459] [cursor=pointer]:
+                    - img "expanded" [ref=f5e461]:
+                      - img [ref=f5e462]
+                    - generic [ref=f5e465]:
+                      - strong [ref=f5e468]: 结构化洞察
+                      - generic [ref=f5e470]: 社交媒体 暂无
+                      - generic [ref=f5e472]: 国家覆盖
+                  - generic [ref=f5e477]:
+                    - generic [ref=f5e480]:
+                      - generic [ref=f5e481]:
+                        - generic [ref=f5e482]:
+                          - strong [ref=f5e484]: Countries with Most Coverage
+                          - text: Top countries by coverage volume
+                        - generic [ref=f5e487]:
+                          - img "global" [ref=f5e488]:
+                            - img [ref=f5e489]
+                          - text: X / web-search
+                      - generic [ref=f5e492]:
+                        - img "暂无数据" [ref=f5e494]
+                        - generic [ref=f5e500]: No country coverage data available
+                    - generic [ref=f5e502]:
+                      - generic [ref=f5e503]:
+                        - generic [ref=f5e504]:
+                          - strong [ref=f5e506]: 社交媒体最新信息
+                          - text: 暂无实时动态
+                        - generic [ref=f5e507]: Social
+                      - generic [ref=f5e510]:
+                        - button "expanded 最新动态 显示说明占位" [expanded] [ref=f5e511] [cursor=pointer]:
+                          - img "expanded" [ref=f5e513]:
+                            - img [ref=f5e514]
+                          - generic [ref=f5e516]: 最新动态 显示说明占位
+                        - generic [ref=f5e519]: 未检索到带真实公开 URL 的社交媒体动态。
+                - generic [ref=f5e520]:
+                  - button "expanded 报告概述" [expanded] [ref=f5e521] [cursor=pointer]:
+                    - img "expanded" [ref=f5e523]:
+                      - img [ref=f5e524]
+                    - strong [ref=f5e528]: 报告概述
+                  - generic [ref=f5e531]:
+                    - img "暂无数据" [ref=f5e533]
+                    - generic [ref=f5e539]: 暂无可提炼的章节概述
+                - button "collapsed 详细描述（原报告全文）" [ref=f5e541] [cursor=pointer]:
+                  - img "collapsed" [ref=f5e543]:
+                    - img [ref=f5e544]
+                  - strong [ref=f5e548]: 详细描述（原报告全文）

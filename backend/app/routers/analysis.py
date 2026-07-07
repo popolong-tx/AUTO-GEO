@@ -356,10 +356,41 @@ async def run_analysis_stream(req: AnalysisRequest, _user: str = Depends(require
 
 @router.get("/history/{topic_id}")
 async def get_analysis_history(topic_id: str):
-    """Get analysis history for a topic."""
+    """Get analysis history for a topic, including today's snapshot if available."""
     if topic_id not in _topics:
         raise HTTPException(status_code=404, detail="Topic not found")
     history = analysis_history.get(topic_id, [])
+
+    # If history is empty, try to load from today's snapshot
+    if not history:
+        import os
+        import json
+        from datetime import datetime
+        snapshot_dir = os.path.expanduser("~/.autogeo_daily_snapshots")
+        today = datetime.now().strftime("%Y-%m-%d")
+        snapshot_key = f"{today}__{topic_id}__"
+
+        # Look for snapshot files matching this topic
+        if os.path.exists(snapshot_dir):
+            for filename in os.listdir(snapshot_dir):
+                if filename.startswith(snapshot_key) and not filename.endswith("__meta.json"):
+                    snapshot_path = os.path.join(snapshot_dir, filename)
+                    try:
+                        with open(snapshot_path, "r", encoding="utf-8") as f:
+                            snapshot = json.load(f)
+                        result = AnalysisResult(
+                            id=snapshot["id"],
+                            topic_id=snapshot["topic_id"],
+                            model=snapshot["model"],
+                            prompt=snapshot["prompt"],
+                            content=snapshot["content"],
+                            sentiment=snapshot.get("sentiment", {}),
+                            created_at=datetime.fromisoformat(snapshot["created_at"]),
+                        )
+                        history.append(result)
+                    except Exception:
+                        pass
+
     return {"results": [r.model_dump() for r in history]}
 
 

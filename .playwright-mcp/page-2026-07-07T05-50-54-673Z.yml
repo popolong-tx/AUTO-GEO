@@ -1,0 +1,29 @@
+- generic [ref=f4e6]:
+  - generic [ref=f4e8]:
+    - generic [ref=f4e9]: AUTO GEO
+    - generic [ref=f4e10]:
+      - img "global" [ref=f4e12]:
+        - img [ref=f4e13]
+      - generic [ref=f4e16] [cursor=pointer]:
+        - generic [ref=f4e18]:
+          - combobox [ref=f4e20]
+          - generic "简体中文" [ref=f4e21]
+        - generic:
+          - img:
+            - img
+  - heading "舆情分析系统" [level=3] [ref=f4e23]
+  - generic [ref=f4e24]: 请输入账号密码以继续访问分析看板
+  - generic [ref=f4e26]:
+    - generic [ref=f4e28]:
+      - generic "用户名" [ref=f4e30]: "* 用户名"
+      - textbox "* 用户名" [ref=f4e34]:
+        - /placeholder: 用户名
+    - generic [ref=f4e36]:
+      - generic "密码" [ref=f4e38]: "* 密码"
+      - generic [ref=f4e42]:
+        - textbox "* 密码" [ref=f4e43]:
+          - /placeholder: 密码
+        - img "eye-invisible" [ref=f4e45] [cursor=pointer]:
+          - img [ref=f4e46]
+    - button "登 录" [ref=f4e49] [cursor=pointer]:
+      - generic [ref=f4e50]: 登 录
