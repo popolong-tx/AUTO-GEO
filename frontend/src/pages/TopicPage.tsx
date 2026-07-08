@@ -12,6 +12,9 @@ import { useTranslation } from '../i18n/LanguageContext';
 import {
   getTopic, streamAnalysis, generateReport, listReports, uploadReferenceFile, getDashboard, getDashboardSources, getAnalysisHistory,
 } from '../services/api';
+import { TOPIC_I18N_KEYS, OVERSEAS_TOPICS } from '../constants/topicConfig';
+import { isRealSocialUrl } from '../utils/urlValidator';
+import { extractTrendFromContent, extractCountryCoverageFromContent } from '../utils/contentExtractors';
 
 import PromptEditor from '../components/PromptEditor';
 import SentimentChart from '../components/SentimentChart';
@@ -25,15 +28,6 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
 const socialLimitOptions = [10, 50, 100];
-
-const TOPIC_I18N_KEYS: Record<string, { name: string; description: string }> = {
-  'goodwood-festival': { name: 'topic.goodwood.name', description: 'topic.goodwood.description' },
-  'flash-charge-launch': { name: 'topic.flashCharge.name', description: 'topic.flashCharge.description' },
-  'q1-financial-report': { name: 'topic.q1Report.name', description: 'topic.q1Report.description' },
-  'smart-chip-launch': { name: 'topic.smartChip.name', description: 'topic.smartChip.description' },
-  'dod-1260h-list': { name: 'topic.dod1260h.name', description: 'topic.dod1260h.description' },
-  'custom-report': { name: 'topic.custom.name', description: 'topic.custom.description' },
-};
 
 const TopicPage: React.FC = () => {
   const { topicId } = useParams<{ topicId: string }>();
@@ -90,8 +84,7 @@ const TopicPage: React.FC = () => {
   useEffect(() => {
     if (topicId) {
       //海外主题默认英文
-      const overseasTopics = ['goodwood-festival', 'dod-1260h-list'];
-      if (overseasTopics.includes(topicId)) {
+      if (OVERSEAS_TOPICS.includes(topicId)) {
         setReportLanguage('en');
       } else {
         setReportLanguage('zh');
@@ -309,43 +302,6 @@ const TopicPage: React.FC = () => {
   );
   const showDashboardCard = hasDashboardData || loadingDashboard;
 
-  const isRealSocialUrl = (url: string) => {
-    const lowered = url.toLowerCase();
-    if (/(example|placeholder|dummy|fake|\/video\/example|\/post\/example|\/watch\/example)/i.test(lowered)) return false;
-    if (/^https?:\/\/(www\.)?(x|twitter|tiktok|youtube|instagram|facebook|reddit|linkedin)\.com\/?$/i.test(lowered)) return false;
-    let parsed: URL;
-    try {
-      parsed = new URL(url);
-    } catch {
-      return false;
-    }
-    const host = parsed.hostname.replace(/^www\./, '').toLowerCase();
-    const path = parsed.pathname.replace(/^\/+|\/+$/g, '');
-    if (!host || !path) return false;
-    if (host === 'x.com' || host === 'twitter.com') {
-      const parts = path.split('/');
-      const statusId = parts[2] || '';
-      if (parts.length < 3 || parts[1].toLowerCase() !== 'status') return false;
-      if (!/^\d{15,22}$/.test(statusId)) return false;
-      if (statusId === '1808123456789123456' || /(123456|234567|345678|456789|567890|678901|789012|890123)/.test(statusId)) return false;
-    }
-    if (host === 'tiktok.com') {
-      const parts = path.split('/');
-      const videoId = parts[2] || '';
-      if (parts.length < 3 || !parts[0].startsWith('@') || parts[1].toLowerCase() !== 'video') return false;
-      if (!/^\d{17,22}$/.test(videoId)) return false;
-      if (videoId === '1234567890' || /(1234567890|0123456789|9876543210)/.test(videoId)) return false;
-    }
-    if (host === 'facebook.com') {
-      if (/(posts|videos|photos)\/abc\d+/i.test(path)) return false;
-      if (/(posts|videos|photos)\//i.test(path)) {
-        const tail = path.split('/').filter(Boolean).pop() || '';
-        if (!/^\d{8,}$/.test(tail)) return false;
-      }
-    }
-    return true;
-  };
-
   const socialUpdates = useMemo(() => {
     const sourceCandidates = [
       dashboardData?.sources,
@@ -410,134 +366,6 @@ const TopicPage: React.FC = () => {
   }, [dashboardData, dashboardSources]);
   const showSourceCard = dashboardSourceList.length > 0 || loadingDashboardSources;
   // Fallback: extract trend data from analysis content when dashboard data is empty
-  const extractTrendFromContent = (content: string) => {
-    if (!content) return [];
-    const byDate: Record<string, { date: string; mentions: number; reach: number }> = {};
-    // Find trend section or use social media section
-    const trendMarkers = ['【趋势统计】', '【Trend Statistics】', '[Trend Statistics]', '## Trend Statistics'];
-    const endMarkers = ['【国家覆盖】', '【引用备注】', '【参考文献】', '[Country Coverage]', '[Citation Notes]', '[References]', '## Country Coverage', '## Citation Notes', '## References', '【社交媒体最新信息】', '[Latest Social Updates]'];
-    let section = '';
-    for (const marker of trendMarkers) {
-      const idx = content.indexOf(marker);
-      if (idx !== -1) {
-        let end = content.length;
-        for (const em of endMarkers) {
-          const pos = content.indexOf(em, idx + marker.length);
-          if (pos !== -1 && pos < end) end = pos;
-        }
-        section = content.slice(idx + marker.length, end).trim();
-        break;
-      }
-    }
-    if (!section) {
-      // Fallback to social media section
-      const socialMarkers = ['【社交媒体最新信息】', '【Latest Social Updates】', '[Latest Social Updates]', '## Latest Social Updates'];
-      for (const marker of socialMarkers) {
-        const idx = content.indexOf(marker);
-        if (idx !== -1) {
-          let end = content.length;
-          for (const em of endMarkers) {
-            const pos = content.indexOf(em, idx + marker.length);
-            if (pos !== -1 && pos < end) end = pos;
-          }
-          section = content.slice(idx + marker.length, end).trim();
-          break;
-        }
-      }
-    }
-    if (!section) return [];
-    for (const line of section.split('\n')) {
-      const text = line.trim();
-      if (!text) continue;
-      // Extract date
-      const dateMatch = text.match(/(?:时间|日期|date)\s*[:：]\s*(\d{4}[-/]\d{1,2}[-/]\d{1,2})/i) || text.match(/\b(\d{4}[-/]\d{1,2}[-/]\d{1,2})\b/);
-      if (!dateMatch) continue;
-      const date = dateMatch[1].replace(/\//g, '-');
-      if (!byDate[date]) byDate[date] = { date, mentions: 0, reach: 0 };
-      byDate[date].mentions += 1;
-      // Extract reach
-      const reachMatch = text.match(/(?:reach|浏览|观看|播放|点赞|转发|互动)\s*[:：]?\s*([\d,]+)/i);
-      if (reachMatch) {
-        byDate[date].reach += parseInt(reachMatch[1].replace(/,/g, ''), 10) || 0;
-      }
-    }
-    return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 14);
-  };
-
-  // Fallback: extract country coverage from analysis content when dashboard data is empty
-  const extractCountryCoverageFromContent = (content: string) => {
-    if (!content) return [];
-    const countryPatterns: [RegExp, string][] = [
-      [/\b(?:US|USA|United States)\b|美国/i, '美国'],
-      [/\b(?:UK|United Kingdom|Britain)\b|英国/i, '英国'],
-      [/\b(?:Germany|DE)\b|德国/i, '德国'],
-      [/\b(?:Japan|JP|JPN)\b|日本/i, '日本'],
-      [/\b(?:France|FR)\b|法国/i, '法国'],
-      [/\b(?:Canada|CA)\b|加拿大/i, '加拿大'],
-      [/\b(?:Australia|AU)\b|澳大利亚/i, '澳大利亚'],
-      [/\b(?:India|IN)\b|印度/i, '印度'],
-      [/\b(?:Brazil|BR)\b|巴西/i, '巴西'],
-      [/\b(?:China|CN)\b|中国/i, '中国'],
-      [/\b(?:Korea|KR|South Korea)\b|韩国/i, '韩国'],
-      [/\b(?:Singapore|SG)\b|新加坡/i, '新加坡'],
-    ];
-    // Find country section
-    const sectionMarkers = ['【国家覆盖】', '[Country Coverage]', '## Country Coverage'];
-    const endMarkers = ['【引用备注】', '【参考文献】', '[Citation Notes]', '[References]', '## Citation Notes', '## References', '【社交媒体最新信息】', '[Latest Social Updates]'];
-    let section = '';
-    for (const marker of sectionMarkers) {
-      const idx = content.indexOf(marker);
-      if (idx !== -1) {
-        let end = content.length;
-        for (const em of endMarkers) {
-          const pos = content.indexOf(em, idx + marker.length);
-          if (pos !== -1 && pos < end) end = pos;
-        }
-        section = content.slice(idx + marker.length, end).trim();
-        break;
-      }
-    }
-    // Also check social media and reference sections
-    if (!section) {
-      const socialMarkers = ['【社交媒体最新信息】', '【Latest Social Updates】', '[Latest Social Updates]', '## Latest Social Updates'];
-      const refMarkers = ['【参考文献】', '[References]', '## References'];
-      const sections: string[] = [];
-      for (const marker of [...socialMarkers, ...refMarkers]) {
-        const idx = content.indexOf(marker);
-        if (idx !== -1) {
-          let end = content.length;
-          for (const em of endMarkers) {
-            const pos = content.indexOf(em, idx + marker.length);
-            if (pos !== -1 && pos < end) end = pos;
-          }
-          sections.push(content.slice(idx + marker.length, end).trim());
-        }
-      }
-      section = sections.join('\n');
-    }
-    if (!section) return [];
-    const grouped: Record<string, { country: string; coverage: number }> = {};
-    for (const line of section.split('\n')) {
-      const text = line.trim().replace(/^[-*•\d.\s]+/, '');
-      if (!text || text.length < 8) continue;
-      const urls = text.match(/https?:\/\/[^\s)\]}，。；;、]+/g) || [];
-      let foundCountry = '';
-      for (const [regex, country] of countryPatterns) {
-        if (regex.test(text)) {
-          foundCountry = country;
-          break;
-        }
-      }
-      if (!foundCountry) continue;
-      if (!grouped[foundCountry]) grouped[foundCountry] = { country: foundCountry, coverage: 0 };
-      grouped[foundCountry].coverage += urls.length > 0 ? urls.length : 1;
-    }
-    return Object.values(grouped)
-      .filter(item => item.coverage > 0)
-      .sort((a, b) => b.coverage - a.coverage)
-      .slice(0, 8);
-  };
-
   const dashboardTrendData = useMemo(() => {
     const raw = dashboardData?.trend || dashboardData?.trends || dashboardData?.mentions_reach_trend || dashboardData?.mentionsReachTrend || dashboardData?.chart_data?.trend;
     const rows = Array.isArray(raw)

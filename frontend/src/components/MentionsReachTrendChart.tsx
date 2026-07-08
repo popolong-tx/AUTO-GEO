@@ -11,6 +11,12 @@ export interface TrendPoint {
   label?: string;
   mentions?: number | string | null;
   reach?: number | string | null;
+  count?: number | string | null;
+  value?: number | string | null;
+  sources?: number | string | null;
+  views?: number | string | null;
+  impressions?: number | string | null;
+  engagement?: number | string | null;
 }
 
 export interface MentionsReachTrendChartProps {
@@ -19,13 +25,13 @@ export interface MentionsReachTrendChartProps {
   loading?: boolean;
 }
 
-const formatNumber = (value: unknown) => {
+const formatNumber = (value: unknown): number => {
   const num = Number(value);
   if (!Number.isFinite(num)) return 0;
   return num;
 };
 
-const compactLabel = (value?: string) => {
+const compactLabel = (value?: string): string => {
   if (!value) return '';
   const text = String(value).trim();
   if (!text) return '';

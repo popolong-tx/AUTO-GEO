@@ -45,15 +45,23 @@ def _load_reports() -> dict:
 
 
 def _save_json_atomic(path: str, data: dict, label: str):
-    """Save JSON to file atomically."""
+    """Save JSON to file atomically with fsync to prevent corruption."""
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         tmp_file = path + ".tmp"
         with open(tmp_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
         os.replace(tmp_file, path)
     except Exception as e:
         print(f"[store] save {label} failed: {e}")
+        # Clean up stale tmp file if it exists
+        try:
+            if os.path.exists(tmp_file):
+                os.remove(tmp_file)
+        except OSError:
+            pass
 
 
 def _save_reports(data: dict):
@@ -63,6 +71,20 @@ def _save_reports(data: dict):
 
 # Load on module import
 reports_history: dict[str, list[dict]] = _load_reports()
+
+
+def _cleanup_stale_tmp():
+    """Remove stale .tmp files left from interrupted writes."""
+    for tmp_path in [DASHBOARD_FILE + ".tmp", REPORTS_FILE + ".tmp", REFRESH_CONFIG_FILE + ".tmp"]:
+        try:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+                print(f"[store] cleaned stale tmp file: {tmp_path}")
+        except OSError:
+            pass
+
+
+_cleanup_stale_tmp()
 
 # Load dashboard on module import
 dashboard_data: dict = {}

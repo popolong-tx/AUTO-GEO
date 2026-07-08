@@ -1,6 +1,7 @@
 """Sentiment analysis engine combining Object Storage data with Grok search."""
 
 import json
+import re
 import asyncio
 import uuid
 from datetime import datetime
@@ -25,8 +26,9 @@ class AnalysisEngine:
     def __init__(self, genai_client: GenAIClient | None, storage_service: ObjectStorageService | None):
         self.genai = genai_client
         self.storage = storage_service
-        self.analysis_timeout = 120
+        self.analysis_timeout = 300  # 5 minutes for two-stage analysis
         self._daily_cache: dict[str, AnalysisResult] = {}
+        self._dashboard_service = DashboardService()  # Reuse single instance
 
     def _build_prompt(self, base_prompt: str, data_content: Optional[dict] = None, analysis_date: Optional[str] = None) -> str:
         """Build final analysis prompt by merging base prompt with data."""
@@ -322,7 +324,7 @@ trend 的 mentions 必须等于该日期下通过真实 URL 校验的社媒/新�
             return {}
 
     def _sanitize_raw_search_data(self, payload: dict, social_updates_limit: int = 10, raw_candidates_limit: Optional[int] = None) -> dict:
-        validator = DashboardService()
+        validator = self._dashboard_service
         raw_candidates_limit = raw_candidates_limit or max(social_updates_limit * 3, social_updates_limit)
 
         def clean_url(url: Any) -> str:
@@ -603,7 +605,7 @@ trend 的 mentions 必须等于该日期下通过真实 URL 校验的社媒/新�
         is_en = report_language == "en"
         marker = "[Latest Social Updates]" if is_en else "【社交媒体最新信息】"
         head = content[:content.find(marker)].rstrip() if marker in content else content.rstrip()
-        validator = DashboardService()
+        validator = self._dashboard_service
         verified_items = []
 
         if raw_search_data and isinstance(raw_search_data.get("social_updates"), list):
@@ -625,7 +627,7 @@ trend 的 mentions 必须等于该日期下通过真实 URL 校验的社媒/新�
         if not verified_items and marker in content:
             section = content[content.find(marker) + len(marker):].strip()
             for line in section.splitlines():
-                urls = [u.rstrip(")],.，。；;:：") for u in __import__("re").findall(r"https?://[^\s)\]}，。；;、]+", line)]
+                urls = [u.rstrip(")],.，。；;:：") for u in re.findall(r"https?://[^\s)\]}，。；;、]+", line)]
                 urls = [u for u in urls if validator._is_real_url(u)]
                 for url in urls:
                     verified_items.append({"time": "", "platform": "", "account": "", "summary": line.strip(), "url": url})
@@ -666,11 +668,11 @@ trend 的 mentions 必须等于该日期下通过真实 URL 校验的社媒/新�
     def _sanitize_report_urls(self, content: str, report_language: str = "zh") -> str:
         """Remove report lines containing invalid/hallucinated social URLs."""
         is_en = report_language == "en"
-        validator = DashboardService()
+        validator = self._dashboard_service
         cleaned_lines = []
         removed = 0
         for line in content.splitlines():
-            urls = [u.rstrip(")],.，。；;:：") for u in __import__("re").findall(r"https?://[^\s)\]}，。；;、]+", line)]
+            urls = [u.rstrip(")],.，。；;:：") for u in re.findall(r"https?://[^\s)\]}，。；;、]+", line)]
             if urls and any(not validator._is_real_url(url) for url in urls):
                 removed += 1
                 continue
@@ -722,11 +724,10 @@ trend 的 mentions 必须等于该日期下通过真实 URL 校验的社媒/新�
         return self._analysis_day_key(topic_id, custom_title) + ":meta"
 
     def _detect_major_event(self, text: str) -> bool:
-        import re
         patterns = [
-            r"重大事件", r"突发", r"紧急", r"危机", r"收购", r"诉讼",
-            r"召回", r"事故", r"爆炸", r"裁员", r"制裁", r"禁令",
-            r"SEC", r"DOJ", r"FDA", r"DOD", r"1260h", r"停产", r"破产",
+            r"重大事件", r"突发", r"紧急", r"危机", r"收购", r"诉讼",
+            r"召回", r"事故", r"爆炸", r"裁员", r"制裁", r"禁令",
+            r"SEC", r"DOJ", r"FDA", r"DOD", r"1260h", r"停产", r"破产",
         ]
         return any(re.search(p, text, re.I) for p in patterns)
 
@@ -977,6 +978,14 @@ trend 的 mentions 必须等于该日期下通过真实 URL 校验的社媒/新�
         """Run analysis with streaming response."""
         if force_refresh:
             self._clear_daily_state(topic_id, custom_title)
+
+        # Check daily cache first (same as analyze method)
+        day_key = self._analysis_day_key(topic_id, custom_title)
+        cached = self._daily_cache.get(day_key)
+        if cached is not None and not force_refresh:
+            yield cached.content
+            return
+
         snapshot = await self._load_daily_snapshot(topic_id, custom_title)
         if snapshot and not force_refresh:
             yield snapshot["content"]

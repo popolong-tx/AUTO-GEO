@@ -1,4 +1,4 @@
-"""Simple local auth service."""
+"""Simple local auth service with password hashing."""
 from __future__ import annotations
 
 import hashlib
@@ -24,20 +24,29 @@ class AuthService:
         if config_path.exists():
             cfg = json.loads(config_path.read_text(encoding="utf-8"))
             self.username = cfg.get("username", "admin")
-            self.password = cfg.get("password", "")
+            self._stored_hash = cfg.get("password", "")
         else:
             self.username = os.getenv("AUTOGEO_ADMIN_USER", "admin")
-            self.password = os.getenv("AUTOGEO_ADMIN_PASSWORD", "")
+            self._stored_hash = os.getenv("AUTOGEO_ADMIN_PASSWORD", "")
         self._sessions: dict[str, SessionUser] = {}
 
-    def _hash(self, password: str) -> str:
-        salt = b"autogeo-auth-salt"
+    @staticmethod
+    def _hash_password(password: str, salt: bytes = b"autogeo-auth-salt") -> str:
+        """Hash a password with salt using SHA-256."""
         return hashlib.sha256(salt + password.encode("utf-8")).hexdigest()
 
     def verify_password(self, username: str, password: str) -> bool:
+        """Verify password against stored hash.
+
+        Supports both hashed (sha256$...) and legacy plaintext passwords.
+        """
         if username != self.username:
             return False
-        return hmac.compare_digest(self.password, password)
+        if self._stored_hash.startswith("sha256$"):
+            expected = self._stored_hash[7:]  # Remove "sha256$" prefix
+            return hmac.compare_digest(expected, self._hash_password(password))
+        # Legacy plaintext fallback (for migration)
+        return hmac.compare_digest(self._stored_hash, password)
 
     def login(self, username: str, password: str) -> str:
         if not self.verify_password(username, password):
@@ -59,7 +68,8 @@ class AuthService:
         self._sessions.pop(token, None)
 
     def hash_password(self, password: str) -> str:
-        return f"sha256${self._hash(password)}"
+        """Return hashed password in sha256$HASH format."""
+        return f"sha256${self._hash_password(password)}"
 
     def get_auth_config(self) -> dict:
         return {"username": self.username}
