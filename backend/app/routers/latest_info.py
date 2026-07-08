@@ -59,6 +59,7 @@ async def collect_latest_info(req: CollectRequest, _user: str = Depends(require_
             prompt=req.topic,
             model=req.model,
             social_updates_limit=req.social_updates_limit,
+            language=req.language,
         )
 
         # Generate markdown report
