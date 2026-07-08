@@ -152,4 +152,4 @@ https://inference.generativeai.us-chicago-1.oci.oraclecloud.com/20231130/actions
 
 ## 许可证
 
-内部演示使用，仅供  舆情分析团队。
+演示使用，仅供舆情分析团队。
