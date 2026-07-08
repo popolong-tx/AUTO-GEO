@@ -75,6 +75,7 @@ const TopicPage: React.FC = () => {
   const [socialUpdatesLimit, setSocialUpdatesLimit] = useState<number>(10);
   const [reportLanguage, setReportLanguage] = useState<string>('zh');
   const [targetRegion, setTargetRegion] = useState<string>('global');
+  const [progressMessages, setProgressMessages] = useState<string[]>([]);
   const streamRef = useRef<any>(null);
   const forceRefreshRef = useRef(false);
 
@@ -194,6 +195,7 @@ const TopicPage: React.FC = () => {
     setAnalyzing(true);
     setStreamContent('');
     setAnalysisResult(null);
+    setProgressMessages([]);
 
     forceRefreshRef.current = forceRefresh;
     streamRef.current = streamAnalysis(
@@ -221,6 +223,7 @@ const TopicPage: React.FC = () => {
       forceRefresh,
       reportLanguage,
       targetRegion,
+      (text) => setProgressMessages((prev) => [...prev, text]),
     );
   };
 
@@ -641,7 +644,23 @@ const TopicPage: React.FC = () => {
                       <Spin size="small" />
                       <Text>{t('analysis.analyzing')}</Text>
                     </div>
-                    <StreamingContent content={streamContent} />
+                    {/* Progress messages */}
+                    {progressMessages.length > 0 && (
+                      <div style={{ marginBottom: 16, padding: '12px 16px', background: '#f0f9ff', borderRadius: 8, border: '1px solid #bae6fd' }}>
+                        {progressMessages.map((msg, idx) => (
+                          <div key={idx} style={{ marginBottom: idx < progressMessages.length - 1 ? 8 : 0, fontSize: 13, color: '#0369a1' }}>
+                            {msg}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Report content */}
+                    {streamContent && (
+                      <div style={{ marginTop: 16 }}>
+                        <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('analysis.reportPreview')}</Text>
+                        <StreamingContent content={streamContent} />
+                      </div>
+                    )}
                   </Card>
                 )}
                 {(analysisResult || dashboardData) && !analyzing && (

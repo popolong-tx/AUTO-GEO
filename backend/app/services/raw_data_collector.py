@@ -434,43 +434,100 @@ trend 的 mentions 必须等于该日期下通过真实 URL 校验的社媒/新�
         topic_id: str,
         raw_data: dict,
         markdown_report: str,
+        analysis_id: Optional[str] = None,
     ) -> Path:
-        """Save raw data and markdown report to disk.
+        """Save raw data and markdown report to disk in an isolated directory.
+
+        Each analysis run gets its own directory:
+            ~/.autogeo_raw_data/{topic_id}_{timestamp}_{analysis_id}/
+                ├── raw_data.md
+                ├── raw_data.json
+                └── metadata.json
 
         Args:
             topic_id: Topic identifier
             raw_data: Raw data dict
             markdown_report: Markdown formatted report
+            analysis_id: Optional analysis ID for unique identification
 
         Returns:
-            Path to the saved markdown file
+            Path to the analysis directory
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{topic_id}_{timestamp}.md"
-        filepath = RAW_DATA_DIR / filename
+        # Create unique directory name
+        dir_name = f"{topic_id}_{timestamp}"
+        if analysis_id:
+            dir_name += f"_{analysis_id[:8]}"
+
+        analysis_dir = RAW_DATA_DIR / dir_name
+        analysis_dir.mkdir(parents=True, exist_ok=True)
 
         # Save markdown report
-        filepath.write_text(markdown_report, encoding="utf-8")
+        md_path = analysis_dir / "raw_data.md"
+        md_path.write_text(markdown_report, encoding="utf-8")
 
-        # Save raw JSON data alongside
-        json_path = RAW_DATA_DIR / f"{topic_id}_{timestamp}.json"
+        # Save raw JSON data
+        json_path = analysis_dir / "raw_data.json"
         json_path.write_text(json.dumps(raw_data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-        return filepath
+        # Save metadata
+        metadata = {
+            "topic_id": topic_id,
+            "analysis_id": analysis_id,
+            "timestamp": timestamp,
+            "created_at": datetime.now().isoformat(),
+            "social_updates_count": len(raw_data.get("social_updates", [])),
+            "country_coverage_count": len(raw_data.get("country_coverage", [])),
+            "trend_count": len(raw_data.get("trend", [])),
+            "references_count": len(raw_data.get("references", [])),
+        }
+        meta_path = analysis_dir / "metadata.json"
+        meta_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    def load_raw_data(self, filepath: Path) -> Optional[dict]:
-        """Load raw data from a JSON file.
+        return analysis_dir
+
+    def load_raw_data(self, analysis_dir: Path) -> Optional[dict]:
+        """Load raw data from an analysis directory.
 
         Args:
-            filepath: Path to the JSON file
+            analysis_dir: Path to the analysis directory
 
         Returns:
             Raw data dict or None if not found
         """
-        json_path = filepath.with_suffix(".json")
+        json_path = analysis_dir / "raw_data.json"
         if not json_path.exists():
             return None
         try:
             return json.loads(json_path.read_text(encoding="utf-8"))
         except Exception:
             return None
+
+    def list_analyses(self, topic_id: Optional[str] = None) -> list[dict]:
+        """List all analysis runs, optionally filtered by topic.
+
+        Args:
+            topic_id: Optional topic ID filter
+
+        Returns:
+            List of analysis metadata dicts
+        """
+        analyses = []
+        if not RAW_DATA_DIR.exists():
+            return analyses
+
+        for dir_path in sorted(RAW_DATA_DIR.iterdir(), reverse=True):
+            if not dir_path.is_dir():
+                continue
+            meta_path = dir_path / "metadata.json"
+            if not meta_path.exists():
+                continue
+            try:
+                metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+                metadata["directory"] = str(dir_path)
+                if topic_id is None or metadata.get("topic_id") == topic_id:
+                    analyses.append(metadata)
+            except Exception:
+                continue
+
+        return analyses

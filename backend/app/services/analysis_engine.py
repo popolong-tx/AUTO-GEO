@@ -247,16 +247,22 @@ class AnalysisEngine:
             uploaded_files or [], data_bucket
         )
 
+        # Generate analysis ID upfront for file isolation
+        analysis_id = str(uuid.uuid4())
+
         # Step 1: Collect raw social data
         raw_search_data = await self._collector.collect(
             prompt, model, social_updates_limit
         )
 
-        # Save raw data as markdown report
+        # Save raw data as markdown report in isolated directory
         markdown_report = self._collector.generate_markdown_report(
             topic_id, raw_search_data, merged_uploaded_files, model or ""
         )
-        self._collector.save_raw_data(topic_id, raw_search_data, markdown_report)
+        self._collector.save_raw_data(topic_id, raw_search_data, markdown_report, analysis_id)
+
+        # Add delay between API calls to avoid rate limits
+        await asyncio.sleep(5)
 
         # Step 2: Generate analysis report
         content = await self._generator.generate(
@@ -280,7 +286,7 @@ class AnalysisEngine:
 
         # Create result
         result = AnalysisResult(
-            id=str(uuid.uuid4()),
+            id=analysis_id,
             topic_id=topic_id,
             model=self.genai.get_model_id(model),
             prompt=prompt,
@@ -354,14 +360,33 @@ class AnalysisEngine:
             yield snapshot["content"]
             return
 
+        # Helper function to yield progress messages (separate from report content)
+        def progress(msg: str):
+            return f"\n__PROGRESS__\n{msg}\n__END_PROGRESS__\n"
+
+        # Progress: Starting analysis
+        is_en = report_language == "en"
+        if is_en:
+            yield progress("🔍 **Starting Analysis**")
+        else:
+            yield progress("🔍 **开始分析**")
+
         # Load external data
         data_content = None
         if data_source_path and data_bucket and self.storage:
+            if is_en:
+                yield progress("📂 Loading reference data from Object Storage...")
+            else:
+                yield progress("📂 正在从对象存储加载参考数据...")
             data_content = await self.storage.read_data_file(data_bucket, data_source_path)
 
         # Process uploaded files (only images for streaming)
         image_inputs = []
         if uploaded_files and self.storage:
+            if is_en:
+                yield progress(f"📎 Processing {len(uploaded_files)} uploaded files...")
+            else:
+                yield progress(f"📎 正在处理 {len(uploaded_files)} 个上传文件...")
             for item in uploaded_files:
                 storage_path = item.get("storage_path")
                 if not storage_path:
@@ -370,18 +395,59 @@ class AnalysisEngine:
                 if base64_ref.get("base64"):
                     image_inputs.append(base64_ref)
 
+        # Generate analysis ID upfront for file isolation
+        analysis_id = str(uuid.uuid4())
+
         # Step 1: Collect raw social data
+        if is_en:
+            yield progress("🌐 **Step 1/2: Collecting Raw Social Data**")
+            yield progress(f"📡 Calling LLM with x_search / web_search tools (requesting {social_updates_limit * 3} candidates)...")
+        else:
+            yield progress("🌐 **第一步：采集原始社交数据**")
+            yield progress(f"📡 正在调用大模型，使用 x_search / web_search 工具采集数据（请求 {social_updates_limit * 3} 条候选）...")
+
         raw_search_data = await self._collector.collect(
             prompt, model, social_updates_limit
         )
 
-        # Save raw data as markdown report
+        # Show collection results
+        summary = raw_search_data.get("collection_summary", {})
+        verified_count = summary.get("verified_social_updates", 0)
+        country_count = len(raw_search_data.get("country_coverage", []))
+        trend_count = len(raw_search_data.get("trend", []))
+
+        if is_en:
+            yield progress(f"✅ **Data Collection Complete**")
+            yield progress(f"- Verified social updates: **{verified_count}** items\n- Country coverage: **{country_count}** countries/regions\n- Trend data points: **{trend_count}** dates")
+        else:
+            yield progress(f"✅ **数据采集完成**")
+            yield progress(f"- 验证通过的社交更新：**{verified_count}** 条\n- 国家覆盖：**{country_count}** 个国家/地区\n- 趋势数据点：**{trend_count}** 个日期")
+
+        # Save raw data as markdown report in isolated directory
         markdown_report = self._collector.generate_markdown_report(
             topic_id, raw_search_data, uploaded_files, model or ""
         )
-        self._collector.save_raw_data(topic_id, raw_search_data, markdown_report)
+        self._collector.save_raw_data(topic_id, raw_search_data, markdown_report, analysis_id)
+
+        if is_en:
+            yield progress("💾 Raw data saved to local storage")
+            yield progress("⏳ Waiting 5 seconds before next API call (rate limit protection)...")
+        else:
+            yield progress("💾 原始数据已保存到本地存储")
+            yield progress("⏳ 等待 5 秒后进行下一次 API 调用（速率限制保护）...")
+
+        # Add delay between API calls to avoid rate limits
+        await asyncio.sleep(5)
 
         # Step 2: Generate analysis report with streaming
+        if is_en:
+            yield progress("📊 **Step 2/2: Generating Analysis Report**")
+            yield progress("🧠 Calling LLM for deep analysis with root cause analysis and risk warnings...")
+        else:
+            yield progress("📊 **第二步：生成分析报告**")
+            yield progress("🧠 正在调用大模型进行深度分析（包含根因分析和风险预警）...")
+
+        final_text = None
         async for chunk in self._generator.generate_stream(
             prompt=prompt,
             model=model,
@@ -393,7 +459,41 @@ class AnalysisEngine:
             report_language=report_language,
             target_region=target_region,
         ):
-            yield chunk
+            # Capture the final processed text from the marker
+            if chunk.startswith("\n__PROCESSED_FINAL__\n"):
+                final_text = chunk[len("\n__PROCESSED_FINAL__\n"):]
+            else:
+                yield chunk
 
-        # Note: The final processed text is yielded by generate_stream with __PROCESSED_FINAL__ marker
-        # The router will handle extracting and persisting the final result
+        # Save snapshot if we got final text
+        if final_text:
+            sentiment = self._generator._parse_sentiment(final_text)
+            result_payload = {
+                "id": analysis_id,
+                "topic_id": topic_id,
+                "model": self.genai.get_model_id(model),
+                "prompt": prompt,
+                "content": final_text,
+                "sentiment": sentiment,
+                "created_at": datetime.now().isoformat(),
+            }
+            await self._save_daily_snapshot(topic_id, custom_title, result_payload)
+            await self._save_daily_snapshot(
+                topic_id,
+                custom_title + "__meta",
+                {
+                    "prompt": prompt,
+                    "content": final_text[:4000],
+                    "force_refresh": force_refresh,
+                    "generated_at": datetime.now().isoformat(),
+                },
+            )
+            self._daily_cache[self._analysis_day_key(topic_id, custom_title)] = AnalysisResult(
+                id=result_payload["id"],
+                topic_id=result_payload["topic_id"],
+                model=result_payload["model"],
+                prompt=result_payload["prompt"],
+                content=result_payload["content"],
+                sentiment=result_payload["sentiment"],
+                created_at=datetime.fromisoformat(result_payload["created_at"]),
+            )

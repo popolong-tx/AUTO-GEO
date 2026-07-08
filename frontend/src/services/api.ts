@@ -51,6 +51,7 @@ export const streamAnalysis = (
   forceRefresh: boolean = false,
   reportLanguage: string = 'zh',
   targetRegion: string = 'global',
+  onProgress?: (text: string) => void,
 ) => {
   const controller = new AbortController();
 
@@ -89,6 +90,8 @@ export const streamAnalysis = (
               const data = JSON.parse(raw);
               if (currentEvent === 'chunk') {
                 onChunk(data.text || '');
+              } else if (currentEvent === 'progress') {
+                onProgress?.(data.text || '');
               } else if (currentEvent === 'done') {
                 onDone(data);
               } else if (currentEvent === 'error') {

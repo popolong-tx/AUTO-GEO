@@ -268,6 +268,10 @@ async def run_analysis_stream(req: AnalysisRequest, _user: str = Depends(require
                 # The engine yields a special marker with the post-processed final text
                 if chunk.startswith("\n__PROCESSED_FINAL__\n"):
                     processed_text = chunk[len("\n__PROCESSED_FINAL__\n"):]
+                elif chunk.startswith("\n__PROGRESS__\n") and chunk.endswith("\n__END_PROGRESS__\n"):
+                    # Extract progress message and send as separate event
+                    progress_msg = chunk[len("\n__PROGRESS__\n"):-len("\n__END_PROGRESS__\n")]
+                    yield {"event": "progress", "data": json.dumps({"text": progress_msg}, ensure_ascii=False)}
                 else:
                     full_content.append(chunk)
                     yield {"event": "chunk", "data": json.dumps({"text": chunk}, ensure_ascii=False)}
@@ -280,7 +284,7 @@ async def run_analysis_stream(req: AnalysisRequest, _user: str = Depends(require
                 model=_engine.genai.get_model_id(req.model),
                 prompt=prompt,
                 content=full_text,
-                sentiment=_engine._parse_sentiment(full_text),
+                sentiment=_engine._generator._parse_sentiment(full_text),
                 created_at=datetime.now(),
             )
 

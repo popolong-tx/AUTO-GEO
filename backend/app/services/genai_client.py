@@ -3,12 +3,17 @@
 import os
 import json
 import base64
+import asyncio
+import logging
 from typing import AsyncGenerator, Optional
 
 try:
-    from openai import AsyncOpenAI
+    from openai import AsyncOpenAI, RateLimitError
 except ImportError:  # pragma: no cover - fallback for test/runtime environments without openai installed
     AsyncOpenAI = None
+    RateLimitError = Exception
+
+logger = logging.getLogger(__name__)
 
 SUPPORTED_MODELS = {
     "xai.grok-4.20-multi-agent-0309": {
@@ -122,6 +127,51 @@ class GenAIClient:
         return resp.output_text if hasattr(resp, "output_text") else str(resp)
 
 
+    async def _retry_with_backoff(self, func, max_retries: int = 3, base_delay: float = 60.0):
+        """Execute function with exponential backoff retry on rate limit errors.
+
+        Args:
+            func: Async function to execute
+            max_retries: Maximum number of retry attempts
+            base_delay: Base delay in seconds (doubles each retry)
+
+        Returns:
+            Result from the function
+
+        Raises:
+            Last exception if all retries fail
+        """
+        last_exception = None
+
+        for attempt in range(max_retries):
+            try:
+                return await func()
+            except RateLimitError as e:
+                last_exception = e
+                if attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    logger.warning(f"Rate limit hit, retrying in {delay:.0f}s (attempt {attempt + 1}/{max_retries})")
+                    await asyncio.sleep(delay)
+                else:
+                    logger.error(f"Rate limit exceeded after {max_retries} attempts")
+                    raise
+            except Exception as e:
+                # Check if it's a 429 error wrapped in a generic exception
+                error_str = str(e)
+                if "429" in error_str or "resource-exhausted" in error_str or "rate" in error_str.lower():
+                    last_exception = e
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        logger.warning(f"Rate limit detected, retrying in {delay:.0f}s (attempt {attempt + 1}/{max_retries})")
+                        await asyncio.sleep(delay)
+                    else:
+                        logger.error(f"Rate limit exceeded after {max_retries} attempts")
+                        raise
+                else:
+                    raise
+
+        raise last_exception
+
     async def analyze_with_tools(
         self,
         prompt: str,
@@ -131,7 +181,7 @@ class GenAIClient:
         temperature: float = 0.7,
         max_tokens: int = 2048,
     ) -> str:
-        """Send a tool-enabled analysis request.
+        """Send a tool-enabled analysis request with rate limit handling.
 
         If auth fails, let the caller decide whether to fall back to demo mode.
         """
@@ -146,13 +196,17 @@ class GenAIClient:
                 "type": "input_image",
                 "image_url": f"data:{img.get('mime_type', 'image/png')};base64,{b64}",
             })
-        resp = await self.client.responses.create(
-            model=model_id,
-            input=[{"role": "user", "content": content}],
-            tools=tools or [],
-            max_output_tokens=max_tokens,
-        )
-        return resp.output_text if hasattr(resp, "output_text") else str(resp)
+
+        async def _call():
+            resp = await self.client.responses.create(
+                model=model_id,
+                input=[{"role": "user", "content": content}],
+                tools=tools or [],
+                max_output_tokens=max_tokens,
+            )
+            return resp.output_text if hasattr(resp, "output_text") else str(resp)
+
+        return await self._retry_with_backoff(_call)
 
     async def analyze_stream(
         self,
@@ -162,29 +216,52 @@ class GenAIClient:
         temperature: float = 0.7,
         max_tokens: int = 2048,
     ) -> AsyncGenerator[str, None]:
-        """Send analysis request and yield streaming response chunks."""
+        """Send analysis request and yield streaming response chunks with rate limit handling."""
         model_id = self.get_model_id(model)
-        try:
-            image_inputs = self._normalize_image_inputs(image_inputs, token_budget=200000)
-            content = [{"type": "input_text", "text": prompt}]
-            for img in (image_inputs or []):
-                b64 = img.get("base64") or ""
-                if not b64:
-                    continue
-                content.append({"type": "input_image", "image_url": f"data:{img.get('mime_type', 'image/png')};base64,{b64}"})
-            stream = await self.client.responses.create(
-                model=model_id,
-                input=[{"role": "user", "content": content}],
-                max_output_tokens=max_tokens,
-                stream=True,
-            )
-            async for event in stream:
-                if hasattr(event, "delta") and event.delta:
-                    yield event.delta
-                elif hasattr(event, "output_text_delta") and event.output_text_delta:
-                    yield event.output_text_delta
-        except Exception as e:
-            yield f"\n[Error: {str(e)}]"
+        image_inputs = self._normalize_image_inputs(image_inputs, token_budget=200000)
+        content = [{"type": "input_text", "text": prompt}]
+        for img in (image_inputs or []):
+            b64 = img.get("base64") or ""
+            if not b64:
+                continue
+            content.append({"type": "input_image", "image_url": f"data:{img.get('mime_type', 'image/png')};base64,{b64}"})
+
+        max_retries = 3
+        base_delay = 60.0
+
+        for attempt in range(max_retries):
+            try:
+                stream = await self.client.responses.create(
+                    model=model_id,
+                    input=[{"role": "user", "content": content}],
+                    max_output_tokens=max_tokens,
+                    stream=True,
+                )
+                async for event in stream:
+                    if hasattr(event, "delta") and event.delta:
+                        yield event.delta
+                    elif hasattr(event, "output_text_delta") and event.output_text_delta:
+                        yield event.output_text_delta
+                return  # Success, exit the retry loop
+            except RateLimitError as e:
+                if attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    logger.warning(f"Rate limit hit in stream, retrying in {delay:.0f}s (attempt {attempt + 1}/{max_retries})")
+                    await asyncio.sleep(delay)
+                else:
+                    yield f"\n[Error: Rate limit exceeded after {max_retries} attempts: {str(e)}]"
+            except Exception as e:
+                error_str = str(e)
+                if "429" in error_str or "resource-exhausted" in error_str:
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        logger.warning(f"Rate limit detected in stream, retrying in {delay:.0f}s (attempt {attempt + 1}/{max_retries})")
+                        await asyncio.sleep(delay)
+                    else:
+                        yield f"\n[Error: Rate limit exceeded after {max_retries} attempts: {str(e)}]"
+                else:
+                    yield f"\n[Error: {str(e)}]"
+                    return
 
     def list_models(self) -> list[dict]:
         """List available models."""
