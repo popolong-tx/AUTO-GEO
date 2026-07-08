@@ -1,6 +1,6 @@
 # 汽车行业 GEO 舆情分析系统
 
-基于 OCI GenAI Grok 模型的汽车行业舆情监测与分析平台，部署在 Oracle Cloud Infrastructure (OCI) Functions 上。
+基于 OCI GenAI Grok 模型的汽车行业舆情监测与分析平台，可以部署在 Oracle Cloud Infrastructure (OCI) Functions 以及虚拟机上。
 
 ## 功能特性
 
