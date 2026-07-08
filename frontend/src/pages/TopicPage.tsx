@@ -136,6 +136,10 @@ const TopicPage: React.FC = () => {
           // 获取最新的分析结果（按时间排序，第一个是最新的）
           const latest = results[0];
           setAnalysisResult(latest);
+          // Use dashboard data from history response if available
+          if (res.data.dashboard) {
+            setDashboard(res.data.dashboard);
+          }
         } else {
           setAnalysisResult(null);
         }
@@ -405,6 +409,135 @@ const TopicPage: React.FC = () => {
     return [];
   }, [dashboardData, dashboardSources]);
   const showSourceCard = dashboardSourceList.length > 0 || loadingDashboardSources;
+  // Fallback: extract trend data from analysis content when dashboard data is empty
+  const extractTrendFromContent = (content: string) => {
+    if (!content) return [];
+    const byDate: Record<string, { date: string; mentions: number; reach: number }> = {};
+    // Find trend section or use social media section
+    const trendMarkers = ['【趋势统计】', '【Trend Statistics】', '[Trend Statistics]', '## Trend Statistics'];
+    const endMarkers = ['【国家覆盖】', '【引用备注】', '【参考文献】', '[Country Coverage]', '[Citation Notes]', '[References]', '## Country Coverage', '## Citation Notes', '## References', '【社交媒体最新信息】', '[Latest Social Updates]'];
+    let section = '';
+    for (const marker of trendMarkers) {
+      const idx = content.indexOf(marker);
+      if (idx !== -1) {
+        let end = content.length;
+        for (const em of endMarkers) {
+          const pos = content.indexOf(em, idx + marker.length);
+          if (pos !== -1 && pos < end) end = pos;
+        }
+        section = content.slice(idx + marker.length, end).trim();
+        break;
+      }
+    }
+    if (!section) {
+      // Fallback to social media section
+      const socialMarkers = ['【社交媒体最新信息】', '【Latest Social Updates】', '[Latest Social Updates]', '## Latest Social Updates'];
+      for (const marker of socialMarkers) {
+        const idx = content.indexOf(marker);
+        if (idx !== -1) {
+          let end = content.length;
+          for (const em of endMarkers) {
+            const pos = content.indexOf(em, idx + marker.length);
+            if (pos !== -1 && pos < end) end = pos;
+          }
+          section = content.slice(idx + marker.length, end).trim();
+          break;
+        }
+      }
+    }
+    if (!section) return [];
+    for (const line of section.split('\n')) {
+      const text = line.trim();
+      if (!text) continue;
+      // Extract date
+      const dateMatch = text.match(/(?:时间|日期|date)\s*[:：]\s*(\d{4}[-/]\d{1,2}[-/]\d{1,2})/i) || text.match(/\b(\d{4}[-/]\d{1,2}[-/]\d{1,2})\b/);
+      if (!dateMatch) continue;
+      const date = dateMatch[1].replace(/\//g, '-');
+      if (!byDate[date]) byDate[date] = { date, mentions: 0, reach: 0 };
+      byDate[date].mentions += 1;
+      // Extract reach
+      const reachMatch = text.match(/(?:reach|浏览|观看|播放|点赞|转发|互动)\s*[:：]?\s*([\d,]+)/i);
+      if (reachMatch) {
+        byDate[date].reach += parseInt(reachMatch[1].replace(/,/g, ''), 10) || 0;
+      }
+    }
+    return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 14);
+  };
+
+  // Fallback: extract country coverage from analysis content when dashboard data is empty
+  const extractCountryCoverageFromContent = (content: string) => {
+    if (!content) return [];
+    const countryPatterns: [RegExp, string][] = [
+      [/\b(?:US|USA|United States)\b|美国/i, '美国'],
+      [/\b(?:UK|United Kingdom|Britain)\b|英国/i, '英国'],
+      [/\b(?:Germany|DE)\b|德国/i, '德国'],
+      [/\b(?:Japan|JP|JPN)\b|日本/i, '日本'],
+      [/\b(?:France|FR)\b|法国/i, '法国'],
+      [/\b(?:Canada|CA)\b|加拿大/i, '加拿大'],
+      [/\b(?:Australia|AU)\b|澳大利亚/i, '澳大利亚'],
+      [/\b(?:India|IN)\b|印度/i, '印度'],
+      [/\b(?:Brazil|BR)\b|巴西/i, '巴西'],
+      [/\b(?:China|CN)\b|中国/i, '中国'],
+      [/\b(?:Korea|KR|South Korea)\b|韩国/i, '韩国'],
+      [/\b(?:Singapore|SG)\b|新加坡/i, '新加坡'],
+    ];
+    // Find country section
+    const sectionMarkers = ['【国家覆盖】', '[Country Coverage]', '## Country Coverage'];
+    const endMarkers = ['【引用备注】', '【参考文献】', '[Citation Notes]', '[References]', '## Citation Notes', '## References', '【社交媒体最新信息】', '[Latest Social Updates]'];
+    let section = '';
+    for (const marker of sectionMarkers) {
+      const idx = content.indexOf(marker);
+      if (idx !== -1) {
+        let end = content.length;
+        for (const em of endMarkers) {
+          const pos = content.indexOf(em, idx + marker.length);
+          if (pos !== -1 && pos < end) end = pos;
+        }
+        section = content.slice(idx + marker.length, end).trim();
+        break;
+      }
+    }
+    // Also check social media and reference sections
+    if (!section) {
+      const socialMarkers = ['【社交媒体最新信息】', '【Latest Social Updates】', '[Latest Social Updates]', '## Latest Social Updates'];
+      const refMarkers = ['【参考文献】', '[References]', '## References'];
+      const sections: string[] = [];
+      for (const marker of [...socialMarkers, ...refMarkers]) {
+        const idx = content.indexOf(marker);
+        if (idx !== -1) {
+          let end = content.length;
+          for (const em of endMarkers) {
+            const pos = content.indexOf(em, idx + marker.length);
+            if (pos !== -1 && pos < end) end = pos;
+          }
+          sections.push(content.slice(idx + marker.length, end).trim());
+        }
+      }
+      section = sections.join('\n');
+    }
+    if (!section) return [];
+    const grouped: Record<string, { country: string; coverage: number }> = {};
+    for (const line of section.split('\n')) {
+      const text = line.trim().replace(/^[-*•\d.\s]+/, '');
+      if (!text || text.length < 8) continue;
+      const urls = text.match(/https?:\/\/[^\s)\]}，。；;、]+/g) || [];
+      let foundCountry = '';
+      for (const [regex, country] of countryPatterns) {
+        if (regex.test(text)) {
+          foundCountry = country;
+          break;
+        }
+      }
+      if (!foundCountry) continue;
+      if (!grouped[foundCountry]) grouped[foundCountry] = { country: foundCountry, coverage: 0 };
+      grouped[foundCountry].coverage += urls.length > 0 ? urls.length : 1;
+    }
+    return Object.values(grouped)
+      .filter(item => item.coverage > 0)
+      .sort((a, b) => b.coverage - a.coverage)
+      .slice(0, 8);
+  };
+
   const dashboardTrendData = useMemo(() => {
     const raw = dashboardData?.trend || dashboardData?.trends || dashboardData?.mentions_reach_trend || dashboardData?.mentionsReachTrend || dashboardData?.chart_data?.trend;
     const rows = Array.isArray(raw)
@@ -412,14 +545,19 @@ const TopicPage: React.FC = () => {
       : raw && typeof raw === 'object'
         ? Object.entries(raw as Record<string, any>).map(([date, value]) => (value && typeof value === 'object' ? { date, ...value } : { date, mentions: value }))
         : [];
-    return rows
+    const fromDashboard = rows
       .map((item: any, index: number) => ({
         date: item?.date || item?.label || `P${index + 1}`,
         mentions: Number(item?.mentions ?? item?.count ?? item?.value ?? item?.sources ?? 0),
         reach: Number(item?.reach ?? item?.views ?? item?.impressions ?? item?.engagement ?? 0),
       }))
       .filter((item) => item.date && (Number.isFinite(item.mentions) || Number.isFinite(item.reach)));
-  }, [dashboardData]);
+    // Fallback: extract from analysis content if dashboard data is empty
+    if (fromDashboard.length === 0 && analysisResult?.content) {
+      return extractTrendFromContent(analysisResult.content);
+    }
+    return fromDashboard;
+  }, [dashboardData, analysisResult]);
   const countryCoverageData = useMemo(() => {
     const raw = dashboardData?.country_coverage || dashboardData?.countryCoverage || dashboardData?.countries || dashboardData?.coverage_by_country || dashboardData?.top_countries || dashboardData?.country_count;
     const rows = Array.isArray(raw)
@@ -427,7 +565,7 @@ const TopicPage: React.FC = () => {
       : raw && typeof raw === 'object'
         ? Object.entries(raw as Record<string, any>).map(([country, value]) => (value && typeof value === 'object' ? { country, ...value } : { country, coverage: value }))
         : [];
-    return rows
+    const fromDashboard = rows
       .map((item: any, index: number) => ({
         country: String(item?.country || item?.name || item?.label || `Country ${index + 1}`),
         value: Number(item?.coverage ?? item?.count ?? item?.value ?? item?.sources ?? item?.mentions ?? 0),
@@ -435,7 +573,12 @@ const TopicPage: React.FC = () => {
       .filter((item) => item.country && Number.isFinite(item.value) && item.value > 0)
       .sort((a, b) => b.value - a.value)
       .slice(0, 8);
-  }, [dashboardData]);
+    // Fallback: extract from analysis content if dashboard data is empty
+    if (fromDashboard.length === 0 && analysisResult?.content) {
+      return extractCountryCoverageFromContent(analysisResult.content);
+    }
+    return fromDashboard;
+  }, [dashboardData, analysisResult]);
   const countryCoverageEmpty = countryCoverageData.length === 0;
 
   const reportOverview = useMemo(() => {

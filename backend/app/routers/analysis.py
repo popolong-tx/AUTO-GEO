@@ -372,7 +372,7 @@ async def get_analysis_history(topic_id: str):
 
         # Look for snapshot files matching this topic
         if os.path.exists(snapshot_dir):
-            for filename in os.listdir(snapshot_dir):
+            for filename in sorted(os.listdir(snapshot_dir), reverse=True):
                 if filename.startswith(snapshot_key) and not filename.endswith("__meta.json"):
                     snapshot_path = os.path.join(snapshot_dir, filename)
                     try:
@@ -391,7 +391,17 @@ async def get_analysis_history(topic_id: str):
                     except Exception:
                         pass
 
-    return {"results": [r.model_dump() for r in history]}
+    # Ensure dashboard data is saved for the latest result
+    dashboard = None
+    if history:
+        _save_dashboard_for_result(history[0])
+        from app.utils.store import get_dashboard
+        dashboard = get_dashboard(topic_id)
+
+    response = {"results": [r.model_dump() for r in history]}
+    if dashboard:
+        response["dashboard"] = dashboard
+    return response
 
 
 @router.get("/result/{analysis_id}")
