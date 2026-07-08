@@ -378,9 +378,14 @@ Apply this bilingual format to ALL sections including: Executive Summary, Key Fi
         summary = raw_search_data.get("collection_summary") if isinstance(raw_search_data.get("collection_summary"), dict) else {}
         lines = [marker]
         if coverage_rows:
-            lines.append(
-                '以下国家/地区覆盖只基于同一批已通过 URL 校验的 x_search / web_search 原始证据聚合；无法可靠归属国家的真实结果统一计入"全球/未归属"。'
-            )
+            if is_en:
+                lines.append(
+                    'The following country/region coverage is based only on the same batch of verified x_search / web_search raw evidence; results that cannot be reliably attributed to a country are counted under "Global/Unattributed".'
+                )
+            else:
+                lines.append(
+                    '以下国家/地区覆盖只基于同一批已通过 URL 校验的 x_search / web_search 原始证据聚合；无法可靠归属国家的真实结果统一计入"全球/未归属"。'
+                )
             if summary:
                 if is_en:
                     lines.append(

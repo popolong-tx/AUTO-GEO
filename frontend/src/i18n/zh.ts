@@ -27,6 +27,7 @@ const zh = {
   'nav.smartChip': '智驾芯片',
   'nav.dod1260h': '1260h清单',
   'nav.customReport': '通用报告',
+  'nav.latestInfo': '获取最新信息',
   'nav.settings': '配置中心',
   'nav.logout': '退出登录',
 

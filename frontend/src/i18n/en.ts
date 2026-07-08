@@ -27,6 +27,7 @@ const en = {
   'nav.smartChip': 'Smart Driving Chip',
   'nav.dod1260h': '1260h List',
   'nav.customReport': 'Custom Report',
+  'nav.latestInfo': 'Get Latest Info',
   'nav.settings': 'Settings',
   'nav.logout': 'Logout',
 

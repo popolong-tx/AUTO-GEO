@@ -8,7 +8,7 @@ from app.services.genai_client import GenAIClient
 from app.services.object_storage import ObjectStorageService
 from app.services.analysis_engine import AnalysisEngine
 from app.services.pdf_generator import PDFGenerator
-from app.routers import topics, analysis, reports, settings, auth, dashboard
+from app.routers import topics, analysis, reports, settings, auth, dashboard, latest_info
 
 app = FastAPI(
     title="AUTO GEO 舆情分析系统",
@@ -43,6 +43,7 @@ pdf_generator = PDFGenerator()
 # Set dependencies for routers
 analysis.set_engine(analysis_engine)
 reports.set_dependencies(pdf_generator, storage_service, config.os_bucket_reports)
+latest_info.set_dependencies(genai_client, pdf_generator)
 
 # Include routers
 app.include_router(topics.router)
@@ -51,6 +52,7 @@ app.include_router(reports.router)
 app.include_router(settings.router)
 app.include_router(auth.router)
 app.include_router(dashboard.router)
+app.include_router(latest_info.router)
 
 
 @app.get("/health")

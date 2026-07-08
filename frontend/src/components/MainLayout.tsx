@@ -9,6 +9,7 @@ import {
   FileTextOutlined,
   SettingOutlined,
   RocketOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useTranslation } from '../i18n/LanguageContext';
@@ -32,10 +33,11 @@ const MainLayout: React.FC = () => {
     { key: '/topic/smart-chip-launch', icon: <BugOutlined />, label: t('nav.smartChip') },
     { key: '/topic/dod-1260h-list', icon: <SafetyOutlined />, label: t('nav.dod1260h') },
     { key: '/topic/custom-report', icon: <FileTextOutlined />, label: t('nav.customReport') },
+    { key: '/latest-info', icon: <SearchOutlined />, label: t('nav.latestInfo') },
     { key: '/settings', icon: <SettingOutlined />, label: t('nav.settings') },
   ];
 
-  const activeKey = location.pathname.startsWith('/topic/') || location.pathname === '/settings'
+  const activeKey = location.pathname.startsWith('/topic/') || location.pathname === '/settings' || location.pathname === '/latest-info'
     ? location.pathname
     : '/';
 

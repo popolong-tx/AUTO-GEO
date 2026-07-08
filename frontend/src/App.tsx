@@ -8,6 +8,7 @@ import MainLayout from './components/MainLayout';
 import HomePage from './pages/HomePage';
 import TopicPage from './pages/TopicPage';
 import SettingsPage from './pages/SettingsPage';
+import LatestInfoPage from './pages/LatestInfoPage';
 import LoginPage from './pages/LoginPage';
 import RequireAuth from './components/RequireAuth';
 import { theme } from './styles/theme';
@@ -25,6 +26,7 @@ const AppRoutes: React.FC = () => {
           <Route element={<RequireAuth><MainLayout /></RequireAuth>}>
             <Route path="/" element={<HomePage />} />
             <Route path="/topic/:topicId" element={<TopicPage />} />
+            <Route path="/latest-info" element={<LatestInfoPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>

@@ -151,3 +151,18 @@ export const login = (username: string, password: string) => api.post('/auth/log
 export const logout = () => api.post('/auth/logout');
 export const me = () => api.get('/auth/me');
 export const getAuthConfig = () => api.get('/auth/config');
+
+
+// Latest Info
+export const collectLatestInfo = (params: {
+  topic: string;
+  social_updates_limit?: number;
+  model?: string;
+  language?: string;
+}) => api.post('/latest-info/collect', params);
+
+export const exportLatestInfoPdf = (params: {
+  topic: string;
+  data: any;
+  language?: string;
+}) => api.post('/latest-info/export-pdf', params, { responseType: 'blob' });
