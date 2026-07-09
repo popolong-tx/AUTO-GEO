@@ -177,10 +177,10 @@ const SettingsPage: React.FC = () => {
                       <Text strong>{translatedTarget.name || `${t('settings.targetName')} ${index + 1}`}</Text>
                       <Switch checked={target.enabled} onChange={(checked) => updateTarget(index, { enabled: checked })} />
                     </div>
-                    <Input value={target.name} placeholder={t('settings.targetName')} onChange={(e) => updateTarget(index, { name: e.target.value })} />
+                    <Input value={translatedTarget.name} placeholder={t('settings.targetName')} onChange={(e) => updateTarget(index, { name: e.target.value })} />
                     <Input value={target.url} placeholder={t('settings.targetUrl')} onChange={(e) => updateTarget(index, { url: e.target.value })} />
                     <Input.Password value={target.secret} placeholder={t('settings.targetSecret')} onChange={(e) => updateTarget(index, { secret: e.target.value })} />
-                    <TextArea rows={2} value={target.description} placeholder={t('settings.targetDescription')} onChange={(e) => updateTarget(index, { description: e.target.value })} />
+                    <TextArea rows={2} value={translatedTarget.description} placeholder={t('settings.targetDescription')} onChange={(e) => updateTarget(index, { description: e.target.value })} />
                   </Space>
                 </Card>
               </List.Item>
