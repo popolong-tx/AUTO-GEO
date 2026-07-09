@@ -218,6 +218,7 @@ async def export_latest_info_pdf(req: ExportPdfRequest, _user: str = Depends(req
             content=content,
             sentiment=None,
             model="Latest Info Collection",
+            language=req.language,
         )
 
         # Return as streaming response

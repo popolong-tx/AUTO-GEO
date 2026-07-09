@@ -12,7 +12,7 @@ interface ReportListProps {
 }
 
 const ReportList: React.FC<ReportListProps> = ({ reports, loading, onRefresh }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const handleDelete = async (topicId: string, reportId: string) => {
     try {
@@ -79,7 +79,7 @@ const ReportList: React.FC<ReportListProps> = ({ reports, loading, onRefresh }) 
               <Space direction="vertical" size={0}>
                 <Text>{item.filename || item.name?.split('/').pop() || t('reports.title')}</Text>
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  {item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : ''}
+                  {item.created_at ? new Date(item.created_at).toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US') : ''}
                   {item.topic_name ? ` · ${item.topic_name}` : ''}
                 </Text>
               </Space>

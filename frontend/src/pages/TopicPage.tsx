@@ -10,7 +10,7 @@ import {
 import { useParams } from 'react-router-dom';
 import { useTranslation } from '../i18n/LanguageContext';
 import {
-  getTopic, streamAnalysis, generateReport, listReports, uploadReferenceFile, getDashboard, getDashboardSources, getAnalysisHistory,
+  getTopic, streamAnalysis, generateReport, listReports, uploadReferenceFile, getDashboard, getDashboardSources, getDashboardSource, getAnalysisHistory,
 } from '../services/api';
 import { TOPIC_I18N_KEYS, OVERSEAS_TOPICS } from '../constants/topicConfig';
 import { isRealSocialUrl } from '../utils/urlValidator';
@@ -406,10 +406,10 @@ const TopicPage: React.FC = () => {
       .slice(0, 8);
     // Fallback: extract from analysis content if dashboard data is empty
     if (fromDashboard.length === 0 && analysisResult?.content) {
-      return extractCountryCoverageFromContent(analysisResult.content);
+      return extractCountryCoverageFromContent(analysisResult.content, language);
     }
     return fromDashboard;
-  }, [dashboardData, analysisResult]);
+  }, [dashboardData, analysisResult, language]);
   const countryCoverageEmpty = countryCoverageData.length === 0;
 
   const reportOverview = useMemo(() => {

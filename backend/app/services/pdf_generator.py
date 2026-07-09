@@ -130,9 +130,10 @@ class PDFGenerator:
             textColor=colors.HexColor("#4a5568"),
         ))
 
-    def _header_footer(self, canvas, doc):
+    def _header_footer(self, canvas, doc, language: str = "zh"):
         """Draw header and footer on each page."""
         canvas.saveState()
+        is_en = language == "en"
         # Header line
         canvas.setStrokeColor(colors.HexColor("#3182ce"))
         canvas.setLineWidth(2)
@@ -140,33 +141,42 @@ class PDFGenerator:
         # Header text
         canvas.setFont(FONT_NAME if FONT_NAME else "Helvetica", 8)
         canvas.setFillColor(colors.HexColor("#718096"))
-        canvas.drawString(20*mm, A4[1] - 13*mm, _wrap_chinese_text("AUTO GEO 舆情分析报告"))
+        header_text = "AUTO GEO Sentiment Report" if is_en else "AUTO GEO 舆情分析报告"
+        canvas.drawString(20*mm, A4[1] - 13*mm, _wrap_chinese_text(header_text))
         # Footer
         canvas.line(20*mm, 15*mm, A4[0] - 20*mm, 15*mm)
-        canvas.drawString(20*mm, 10*mm, _wrap_chinese_text(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M')}"))
-        canvas.drawRightString(A4[0] - 20*mm, 10*mm, _wrap_chinese_text(f"第 {doc.page} 页"))
+        time_label = "Generated at" if is_en else "生成时间"
+        canvas.drawString(20*mm, 10*mm, _wrap_chinese_text(f"{time_label}: {datetime.now().strftime('%Y-%m-%d %H:%M')}"))
+        page_label = "Page" if is_en else "第"
+        page_suffix = "" if is_en else "页"
+        canvas.drawRightString(A4[0] - 20*mm, 10*mm, _wrap_chinese_text(f"{page_label} {doc.page}{page_suffix}"))
         canvas.restoreState()
 
-    def _create_cover(self, topic_name: str, analysis_date: str) -> list:
+    def _create_cover(self, topic_name: str, analysis_date: str, language: str = "zh") -> list:
         """Create cover page elements."""
+        is_en = language == "en"
         elements = []
         elements.append(Spacer(1, 80*mm))
         elements.append(Paragraph(_wrap_chinese_text("AUTO GEO"), self.styles["CoverTitle"]))
-        elements.append(Paragraph(_wrap_chinese_text("舆情分析报告"), self.styles["CoverTitle"]))
+        title = "Sentiment Analysis Report" if is_en else "舆情分析报告"
+        elements.append(Paragraph(_wrap_chinese_text(title), self.styles["CoverTitle"]))
         elements.append(Spacer(1, 15*mm))
         elements.append(Paragraph(_wrap_chinese_text(topic_name), self.styles["CoverSubtitle"]))
         elements.append(Spacer(1, 10*mm))
-        elements.append(Paragraph(_wrap_chinese_text(f"分析日期: {analysis_date}"), self.styles["CoverSubtitle"]))
+        date_label = "Analysis Date" if is_en else "分析日期"
+        elements.append(Paragraph(_wrap_chinese_text(f"{date_label}: {analysis_date}"), self.styles["CoverSubtitle"]))
         elements.append(Spacer(1, 5*mm))
-        elements.append(Paragraph(_wrap_chinese_text("机密 - 仅供内部使用"), ParagraphStyle(
+        confidential = "CONFIDENTIAL - Internal Use Only" if is_en else "机密 - 仅供内部使用"
+        elements.append(Paragraph(_wrap_chinese_text(confidential), ParagraphStyle(
             "Confidential", fontName=FONT_NAME, fontSize=10,
             alignment=1, textColor=colors.HexColor("#e53e3e"),
         )))
         elements.append(PageBreak())
         return elements
 
-    def _create_sentiment_chart(self, sentiment: dict) -> Drawing:
+    def _create_sentiment_chart(self, sentiment: dict, language: str = "zh") -> Drawing:
         """Create a sentiment pie chart."""
+        is_en = language == "en"
         d = Drawing(300, 200)
         pie = Pie()
         pie.x = 75
@@ -185,15 +195,19 @@ class PDFGenerator:
         pie.slices[1].fillColor = colors.HexColor("#ecc94b")
         pie.slices[2].fillColor = colors.HexColor("#f56565")
         d.add(pie)
-        # Legend
-        labels = [("正面", "#48bb78"), ("中性", "#ecc94b"), ("负面", "#f56565")]
+        # Legend with bilingual labels
+        if is_en:
+            labels = [("Positive", "#48bb78"), ("Neutral", "#ecc94b"), ("Negative", "#f56565")]
+        else:
+            labels = [("正面", "#48bb78"), ("中性", "#ecc94b"), ("负面", "#f56565")]
         for i, (label, color) in enumerate(labels):
             d.add(Rect(250, 140 - i*25, 12, 12, fillColor=colors.HexColor(color)))
             d.add(String(268, 143 - i*25, f"{label}: {pie.data[i]:.0f}%", fontName=FONT_NAME, fontSize=9))
         return d
 
-    def _parse_markdown_sections(self, content: str) -> list:
+    def _parse_markdown_sections(self, content: str, language: str = "zh") -> list:
         """Parse markdown content into reportlab elements."""
+        is_en = language == "en"
         elements = []
         lines = content.split("\n")
         i = 0
@@ -202,8 +216,8 @@ class PDFGenerator:
 
             if line.startswith("## "):
                 title = line[3:].strip()
-                # Check for sentiment JSON block
-                if "情绪分析" in title:
+                # Check for sentiment JSON block (support both Chinese and English)
+                if "情绪分析" in title or "Sentiment Analysis" in title:
                     elements.append(Paragraph(_wrap_chinese_text(title), self.styles["SectionTitle"]))
                     # Look for JSON block
                     json_found = False
@@ -253,8 +267,10 @@ class PDFGenerator:
         content: str,
         sentiment: Optional[dict] = None,
         model: str = "",
+        language: str = "zh",
     ) -> bytes:
         """Generate a PDF report from analysis content."""
+        is_en = language == "en"
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
             buffer,
@@ -267,13 +283,17 @@ class PDFGenerator:
 
         elements = []
         # Cover page
+        date_format = "%Y-%m-%d" if is_en else "%Y年%m月%d日"
         elements.extend(self._create_cover(
             topic_name,
-            datetime.now().strftime("%Y年%m月%d日"),
+            datetime.now().strftime(date_format),
+            language=language,
         ))
 
         # Analysis content
-        elements.extend(self._parse_markdown_sections(content))
+        elements.extend(self._parse_markdown_sections(content, language=language))
 
-        doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer)
+        # Use lambda to pass language to header_footer callback
+        header_footer_fn = lambda canvas, doc: self._header_footer(canvas, doc, language=language)
+        doc.build(elements, onFirstPage=header_footer_fn, onLaterPages=header_footer_fn)
         return buffer.getvalue()

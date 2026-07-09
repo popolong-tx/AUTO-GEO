@@ -37,10 +37,57 @@ class RawDataCollector:
         base_prompt: str,
         social_updates_limit: int = 10,
         raw_candidates_limit: Optional[int] = None,
+        language: str = "zh",
     ) -> str:
         """Build prompt for raw data collection phase."""
         raw_candidates_limit = raw_candidates_limit or max(social_updates_limit * 3, social_updates_limit)
-        return f"""
+        is_en = language == "en"
+
+        if is_en:
+            return f"""
+You are a raw data collector for sentiment analysis. Only collect and organize evidence, do not write long analysis.
+
+Search Topic:
+{base_prompt}
+
+Tasks:
+1. Use x_search and web_search to fetch the latest public information related to the topic.
+2. Only keep real, specific, clickable public URLs; do not output example links, guessed links, platform homepages, or placeholder links.
+3. Be extra conservative with social media links from X/Twitter, Facebook, TikTok, etc.: if you cannot confirm it's a specific post/video/article URL, do not output it.
+4. Output JSON only, no Markdown.
+5. For each social media update, try to obtain engagement data (likes, retweets, comments, views, etc.).
+
+JSON schema:
+{{
+  "social_updates": [
+    {{"time":"", "platform":"", "account":"", "summary":"", "url":"", "country":"", "likes": 0, "retweets": 0, "replies": 0, "views": 0, "engagement": 0}}
+  ],
+  "country_coverage": [
+    {{"country":"", "coverage": 0, "platforms": [], "urls": [], "summary":""}}
+  ],
+  "trend": [
+    {{"date":"YYYY-MM-DD", "mentions": 0, "reach": 0, "urls": []}}
+  ],
+  "references": [
+    {{"title":"", "source":"", "url":"", "summary":""}}
+  ]
+}}
+
+Field descriptions:
+- social_updates.likes: Like count (if provided in search results)
+- social_updates.retweets: Retweet/share count (if provided in search results)
+- social_updates.replies: Comment/reply count (if provided in search results)
+- social_updates.views: View/play count (if provided in search results)
+- social_updates.engagement: Total engagement (if provided, usually likes+retweets+replies)
+- country_coverage.summary: Summary of main findings for that country/region
+
+Quantity limits: First try to fetch social_updates raw candidates up to {raw_candidates_limit} items (about 2-3x the user's {social_updates_limit} selection), then the system will validate URLs, deduplicate, and truncate; final verified_social_updates will keep at most {social_updates_limit} items; country_coverage at most 8 countries/regions; trend at most 14 date points; references at most 12 items.
+If verified social URLs are less than {social_updates_limit}, do not fabricate data; must state in collection_summary: requested_social_updates, raw_candidates_requested, verified_social_updates, shortfall_reason.
+Engagement data (likes, retweets, replies, views, engagement) should only be filled when explicitly provided in search results, do not fabricate. If not provided, omit these fields or set to 0.
+All country names must be in English (e.g., "United States" not "美国", "China" not "中国").
+""".strip()
+        else:
+            return f"""
 你是舆情原始数据采集器。请只做检索和证据整理，不做长篇分析。
 
 检索主题：
@@ -367,6 +414,7 @@ trend 的 mentions 必须等于该日期下通过真实 URL 校验的社媒/新�
             prompt,
             social_updates_limit=social_updates_limit,
             raw_candidates_limit=raw_candidates_limit,
+            language=language,
         )
 
         try:

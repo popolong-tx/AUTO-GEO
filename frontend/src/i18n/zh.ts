@@ -110,6 +110,7 @@ const zh = {
   'analysis.exportPdfZh': '导出中文 PDF',
   'analysis.exportPdfEn': 'Export English PDF',
   'analysis.exportPdfBilingual': '导出双语 PDF',
+  'analysis.reportPreview': '报告预览',
 
   // 结构化洞察
   'insights.title': '结构化洞察',

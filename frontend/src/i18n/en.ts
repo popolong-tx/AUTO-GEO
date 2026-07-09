@@ -110,6 +110,7 @@ const en = {
   'analysis.exportPdfZh': 'Export Chinese PDF',
   'analysis.exportPdfEn': 'Export English PDF',
   'analysis.exportPdfBilingual': 'Export Bilingual PDF',
+  'analysis.reportPreview': 'Report Preview',
 
   // Structured Insights
   'insights.title': 'Structured Insights',
@@ -305,7 +306,7 @@ const en = {
   'glossary.sentiment': 'Sentiment',
   'glossary.sentimentDesc': 'Positive/Neutral/Negative sentiment distribution',
   'glossary.countryCoverage': 'Country Coverage',
-  'glossary.countryCoverageDesc': '传播热度 by country/region',
+  'glossary.countryCoverageDesc': 'Coverage volume by country/region',
   'glossary.socialUpdates': 'Latest Social Updates',
   'glossary.socialUpdatesDesc': 'Recent X/social media related updates',
 

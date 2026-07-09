@@ -20,7 +20,7 @@ interface PromptEditorProps {
 const PromptEditor: React.FC<PromptEditorProps> = ({
   open, topicId, currentPrompt, onClose, onSaved,
 }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [content, setContent] = useState(currentPrompt);
   const [saving, setSaving] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -138,7 +138,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
                   }
                   description={
                     <Text type="secondary" ellipsis style={{ maxWidth: 400 }}>
-                      {new Date(item.created_at).toLocaleString('zh-CN')} - {item.content.substring(0, 80)}...
+                      {new Date(item.created_at).toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US')} - {item.content.substring(0, 80)}...
                     </Text>
                   }
                 />

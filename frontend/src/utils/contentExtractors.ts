@@ -85,22 +85,27 @@ export const extractTrendFromContent = (content: string): TrendDataPoint[] => {
 /**
  * Extract country coverage from analysis content when dashboard data is empty.
  */
-export const extractCountryCoverageFromContent = (content: string): CountryCoverageItem[] => {
+export const extractCountryCoverageFromContent = (content: string, language: string = 'zh'): CountryCoverageItem[] => {
   if (!content) return [];
 
-  const countryPatterns: [RegExp, string][] = [
-    [/\b(?:US|USA|United States)\b|美国/i, '美国'],
-    [/\b(?:UK|United Kingdom|Britain)\b|英国/i, '英国'],
-    [/\b(?:Germany|DE)\b|德国/i, '德国'],
-    [/\b(?:Japan|JP|JPN)\b|日本/i, '日本'],
-    [/\b(?:France|FR)\b|法国/i, '法国'],
-    [/\b(?:Canada|CA)\b|加拿大/i, '加拿大'],
-    [/\b(?:Australia|AU)\b|澳大利亚/i, '澳大利亚'],
-    [/\b(?:India|IN)\b|印度/i, '印度'],
-    [/\b(?:Brazil|BR)\b|巴西/i, '巴西'],
-    [/\b(?:China|CN)\b|中国/i, '中国'],
-    [/\b(?:Korea|KR|South Korea)\b|韩国/i, '韩国'],
-    [/\b(?:Singapore|SG)\b|新加坡/i, '新加坡'],
+  const is_en = language === 'en';
+
+  // Country patterns with bilingual names
+  const countryPatterns: [RegExp, string, string][] = [
+    [/\b(?:US|USA|United States)\b|美国/i, 'United States', '美国'],
+    [/\b(?:UK|United Kingdom|Britain)\b|英国/i, 'United Kingdom', '英国'],
+    [/\b(?:Germany|DE)\b|德国/i, 'Germany', '德国'],
+    [/\b(?:Japan|JP|JPN)\b|日本/i, 'Japan', '日本'],
+    [/\b(?:France|FR)\b|法国/i, 'France', '法国'],
+    [/\b(?:Canada|CA)\b|加拿大/i, 'Canada', '加拿大'],
+    [/\b(?:Australia|AU)\b|澳大利亚/i, 'Australia', '澳大利亚'],
+    [/\b(?:India|IN)\b|印度/i, 'India', '印度'],
+    [/\b(?:Brazil|BR)\b|巴西/i, 'Brazil', '巴西'],
+    [/\b(?:China|CN)\b|中国/i, 'China', '中国'],
+    [/\b(?:Korea|KR|South Korea)\b|韩国/i, 'South Korea', '韩国'],
+    [/\b(?:Singapore|SG)\b|新加坡/i, 'Singapore', '新加坡'],
+    [/\b(?:Europe)\b|欧洲/i, 'Europe', '欧洲'],
+    [/\b(?:Global|Worldwide)\b|全球/i, 'Global/Unattributed', '全球/未归属'],
   ];
 
   // Find country section
@@ -152,9 +157,9 @@ export const extractCountryCoverageFromContent = (content: string): CountryCover
     const urls = text.match(/https?:\/\/[^\s)\]}，。；;、]+/g) || [];
     let foundCountry = '';
 
-    for (const [regex, country] of countryPatterns) {
+    for (const [regex, enName, zhName] of countryPatterns) {
       if (regex.test(text)) {
-        foundCountry = country;
+        foundCountry = is_en ? enName : zhName;
         break;
       }
     }

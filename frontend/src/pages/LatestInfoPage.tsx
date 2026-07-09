@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import {
-  Card, Typography, Input, Button, Space, Tag, Spin, Empty, List, message, Select, Collapse, Divider,
+  Card, Typography, Input, Button, Space, Tag, Spin, Empty, List, message, Select, Collapse,
 } from 'antd';
 import {
-  SearchOutlined, FilePdfOutlined, GlobalOutlined, RiseOutlined,
+  SearchOutlined, FilePdfOutlined, GlobalOutlined,
   LinkOutlined, ClockCircleOutlined, LikeOutlined, RetweetOutlined,
-  EyeOutlined, MessageOutlined, FireOutlined, ThunderboltOutlined,
+  EyeOutlined, MessageOutlined, FireOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from '../i18n/LanguageContext';
 import { collectLatestInfo, exportLatestInfoPdf } from '../services/api';

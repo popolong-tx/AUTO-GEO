@@ -175,6 +175,7 @@ async def run_analysis(req: AnalysisRequest, _user: str = Depends(require_auth))
                     content=result.content,
                     sentiment=result.sentiment,
                     model=result.model,
+                    language=getattr(req, "report_language", "zh"),
                 )
                 timestamp = dt.now().strftime("%Y%m%d_%H%M%S")
                 report_id = str(_uuid.uuid4())[:8]
@@ -318,6 +319,7 @@ async def run_analysis_stream(req: AnalysisRequest, _user: str = Depends(require
                         content=full_text,
                         sentiment=result.sentiment,
                         model=result.model,
+                        language=getattr(req, "report_language", "zh"),
                     )
                     timestamp = dt.now().strftime("%Y%m%d_%H%M%S")
                     report_id = str(_uuid.uuid4())[:8]
