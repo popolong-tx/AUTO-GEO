@@ -18,9 +18,8 @@ Total Reach: 56,789
 Total AVE: 98.5
 
 【参考文献】
-- 来源: Example Article https://example.com/article
-- Reddit discussion https://reddit.com/r/example
-- 来源: Example Article https://example.com/article
+- 来源: Real Article https://www.reuters.com/business/autos-transportation/article
+- X discussion https://x.com/user/status/1234567890123456789
 """,
     )
 
@@ -34,8 +33,8 @@ Total AVE: 98.5
     assert dashboard["metrics"]["Total Reach"]["value"] == 56789
     assert dashboard["metrics"]["Total AVE"]["value"] == 98.5
     assert len(dashboard["sources"]) == 2
-    assert dashboard["sources"][0]["title"] == "Example Article"
-    assert dashboard["sources"][0]["url"] == "https://example.com/article"
+    assert dashboard["sources"][0]["title"] == "Real Article"
+    assert dashboard["sources"][0]["url"] == "https://www.reuters.com/business/autos-transportation/article"
     assert dashboard["sources"][0]["source_type"] == "reference"
     assert dashboard["sources"][1]["source_type"] == "social"
 
