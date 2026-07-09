@@ -7,7 +7,30 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
 const SettingsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+
+  // Translate backend Chinese defaults to current language
+  const translateTarget = (target: any) => {
+    if (!target) return target;
+    const is_en = language === 'en';
+    let name = target.name || '';
+    let description = target.description || '';
+
+    // Translate common Chinese defaults
+    if (name === '默认Webhook') name = is_en ? 'Default Webhook' : '默认Webhook';
+    if (description === '默认通用通知目标') description = is_en ? 'Default notification target' : '默认通用通知目标';
+
+    return { ...target, name, description };
+  };
+
+  const translateNote = (note: string) => {
+    if (!note) return note;
+    const is_en = language === 'en';
+    if (note === '用于将通用分析结果通知到其他系统，也可供龙虾或其他系统回调/调用。') {
+      return is_en ? 'Used to notify other systems with analysis results, or for Lobster/other systems to callback.' : note;
+    }
+    return note;
+  };
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -144,12 +167,14 @@ const SettingsPage: React.FC = () => {
 
           <List
             dataSource={form.targets}
-            renderItem={(target: any, index: number) => (
+            renderItem={(target: any, index: number) => {
+              const translatedTarget = translateTarget(target);
+              return (
               <List.Item style={{ padding: 0, marginBottom: 12, border: 'none' }}>
                 <Card size="small" style={{ width: '100%', borderRadius: 16, border: '1px solid #e8eef7', boxShadow: '0 8px 20px rgba(15,23,42,0.05)' }}>
                   <Space direction="vertical" size={10} style={{ width: '100%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text strong>{target.name || `Webhook ${index + 1}`}</Text>
+                      <Text strong>{translatedTarget.name || `${t('settings.targetName')} ${index + 1}`}</Text>
                       <Switch checked={target.enabled} onChange={(checked) => updateTarget(index, { enabled: checked })} />
                     </div>
                     <Input value={target.name} placeholder={t('settings.targetName')} onChange={(e) => updateTarget(index, { name: e.target.value })} />
@@ -159,14 +184,15 @@ const SettingsPage: React.FC = () => {
                   </Space>
                 </Card>
               </List.Item>
-            )}
+              );
+            }}
           />
 
           <Button onClick={addTarget}>{t('settings.addTarget')}</Button>
 
           <div>
             <Text strong>{t('settings.notes')}</Text>
-            <TextArea rows={4} value={form.general_webhook_note} onChange={(e) => setForm((prev: any) => ({ ...prev, general_webhook_note: e.target.value }))} style={{ marginTop: 6 }} />
+            <TextArea rows={4} value={translateNote(form.general_webhook_note)} onChange={(e) => setForm((prev: any) => ({ ...prev, general_webhook_note: e.target.value }))} style={{ marginTop: 6 }} />
           </div>
 
           <Space wrap>
