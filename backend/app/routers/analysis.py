@@ -362,40 +362,49 @@ async def run_analysis_stream(req: AnalysisRequest, _user: str = Depends(require
 
 @router.get("/history/{topic_id}")
 async def get_analysis_history(topic_id: str):
-    """Get analysis history for a topic, including today's snapshot if available."""
+    """Get analysis history for a topic, including snapshots from any date."""
     if topic_id not in _topics:
         raise HTTPException(status_code=404, detail="Topic not found")
     history = analysis_history.get(topic_id, [])
 
-    # If history is empty, try to load from today's snapshot
+    # If history is empty, try to load from snapshots (any date)
     if not history:
         import os
         import json
         from datetime import datetime
         snapshot_dir = os.path.expanduser("~/.autogeo_daily_snapshots")
-        today = datetime.now().strftime("%Y-%m-%d")
-        snapshot_key = f"{today}__{topic_id}__"
 
-        # Look for snapshot files matching this topic
+        # Look for snapshot files matching this topic (any date)
         if os.path.exists(snapshot_dir):
-            for filename in sorted(os.listdir(snapshot_dir), reverse=True):
-                if filename.startswith(snapshot_key) and not filename.endswith("__meta.json"):
-                    snapshot_path = os.path.join(snapshot_dir, filename)
-                    try:
-                        with open(snapshot_path, "r", encoding="utf-8") as f:
-                            snapshot = json.load(f)
-                        result = AnalysisResult(
-                            id=snapshot["id"],
-                            topic_id=snapshot["topic_id"],
-                            model=snapshot["model"],
-                            prompt=snapshot["prompt"],
-                            content=snapshot["content"],
-                            sentiment=snapshot.get("sentiment", {}),
-                            created_at=datetime.fromisoformat(snapshot["created_at"]),
-                        )
-                        history.append(result)
-                    except Exception:
-                        pass
+            # Filter for files matching this topic (pattern: {date}__{topic_id}__.json)
+            topic_files = []
+            for filename in os.listdir(snapshot_dir):
+                # Match pattern: YYYY-MM-DD__{topic_id}__.json (not __meta.json)
+                if f"__{topic_id}__" in filename and not filename.endswith("__meta.json"):
+                    topic_files.append(filename)
+
+            # Sort by filename (which includes date) in reverse order (newest first)
+            topic_files.sort(reverse=True)
+
+            for filename in topic_files:
+                snapshot_path = os.path.join(snapshot_dir, filename)
+                try:
+                    with open(snapshot_path, "r", encoding="utf-8") as f:
+                        snapshot = json.load(f)
+                    result = AnalysisResult(
+                        id=snapshot["id"],
+                        topic_id=snapshot["topic_id"],
+                        model=snapshot["model"],
+                        prompt=snapshot["prompt"],
+                        content=snapshot["content"],
+                        sentiment=snapshot.get("sentiment", {}),
+                        created_at=datetime.fromisoformat(snapshot["created_at"]),
+                    )
+                    history.append(result)
+                    # Only load the most recent snapshot
+                    break
+                except Exception:
+                    pass
 
     # Ensure dashboard data is saved for the latest result
     dashboard = None
