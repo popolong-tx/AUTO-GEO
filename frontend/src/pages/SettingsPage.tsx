@@ -74,7 +74,7 @@ const SettingsPage: React.FC = () => {
       ...prev,
       targets: [
         ...prev.targets,
-        { name: `Webhook ${prev.targets.length + 1}`, enabled: false, url: '', secret: '', description: '' },
+        { name: `${t('settings.targetName')} ${prev.targets.length + 1}`, enabled: false, url: '', secret: '', description: '' },
       ],
     }));
   };
